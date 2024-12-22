@@ -1,0 +1,16 @@
+{
+    "cb6894f8-cd0d-4479-b82f-6b656bd72a9b": {
+        "id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "name": "h2",
+        "email": "h2",
+        "phone": "2",
+        "password": "2",
+        "vehicle_type": "2",
+        "license_number": "2",
+        "rating": 0.0,
+        "total_ratings": 0,
+        "current_location": null,
+        "active_ride": null,
+        "ride_history": []
+    }
+}
