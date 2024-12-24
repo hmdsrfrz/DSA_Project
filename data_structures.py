@@ -1,4 +1,6 @@
+#data_structures.py
 import json
+from save_load import save_data_to_file, load_data_from_file
 
 class MinHeap:
     def __init__(self):
@@ -122,36 +124,33 @@ class Graph:
         return distances, previous
 
     def get_shortest_path(self, start, end):
-        """
-        Gets the shortest path between start and end nodes.
+        if start not in self.nodes or end not in self.nodes:
+            raise ValueError(f"Invalid nodes: {start} or {end} not found in the graph.")
         
-        Args:
-            start: Starting node
-            end: Ending node
-            
-        Returns:
-            tuple: (path_distance, path_nodes)
-            where path_distance is the total distance
-            and path_nodes is a list of nodes in the path
-        """
-        # Get shortest distances and previous nodes
         distances, previous = self.dijkstra(start)
-        
+
         if distances[end] == float('infinity'):
-            return None, None  # No path exists
-            
+            return None, []  # No path exists
+
         # Reconstruct the path
         path = []
         current = end
-        
-        while current is not None:
+        while current:
             path.append(current)
             current = previous[current]
-            
-        # Reverse path to get it from start to end
+
         path.reverse()
-        
         return distances[end], path
+
+        
+
+    def get_shortest_path_distance(self, start, end):
+        if start not in self.nodes or end not in self.nodes:
+            return None
+        distances, _ = self.dijkstra(start)
+        return distances.get(end, float('inf'))
+
+
 
     def get_all_paths(self, start):
         """
@@ -186,6 +185,21 @@ class Graph:
             paths[end] = (distances[end], path)
             
         return paths
+    
+    def to_dict(self):
+        """
+        Converts the Graph into a dictionary for serialization.
+        """
+        return {"nodes": self.nodes}
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Reconstructs a Graph from a dictionary.
+        """
+        new_graph = cls()
+        new_graph.nodes = data.get("nodes", {})
+        return new_graph
 
 class DoublyLinkedList:
     class Node:
@@ -236,6 +250,27 @@ class DoublyLinkedList:
             print(current.data)
             current = current.prev
 
+    def to_list(self):
+        """
+        Converts the DoublyLinkedList into a standard Python list.
+        """
+        result = []
+        current = self.head
+        while current:
+            result.append(current.data)  # Assuming each node has a 'data' attribute
+            current = current.next
+        return result
+
+    @classmethod
+    def from_list(cls, data_list):
+        """
+        Creates a DoublyLinkedList from a standard Python list.
+        """
+        new_list = cls()
+        for item in data_list:
+            new_list.append(item)  # Assuming an `append` method exists
+        return new_list
+    
     def delete(self, data):
         current = self.head
         while current:
@@ -261,39 +296,43 @@ class HashTable:
         return hash_value
     
     def save_to_file(self, filename):
-        table_data = {}
+        save_data_to_file(self.to_dict(), filename)
+
+    def load_from_file(self, filename):
+        loaded_data = load_data_from_file(filename, dict)
+        if loaded_data:
+            self.table = loaded_data
+
+    def to_dict(self):
+        """
+        Converts the HashTable into a standard Python dictionary.
+        Handles special serialization for nested DoublyLinkedList objects.
+        """
+        result = {}
         for bucket in self.table.values():
             if bucket:
                 for key, value in bucket:
-                    # Serialize DoublyLinkedList objects
-                    serializable_value = value.copy()  # Copy the dictionary
-                    if isinstance(value.get('ride_history'), DoublyLinkedList):
-                        serializable_value['ride_history'] = value['ride_history'].to_list()
-                    table_data[key] = serializable_value
-        try:
-            with open(filename, 'w') as f:
-                json.dump(table_data, f, indent=4)
-            print(f"Data successfully saved to {filename}")
-        except Exception as e:
-            print(f"Error saving to file {filename}: {e}")
+                    # Convert DoublyLinkedList to list if present
+                    if isinstance(value, dict) and 'ride_history' in value:
+                        value = value.copy()  # Avoid modifying the original value
+                        value['ride_history'] = value['ride_history'].to_list()
+                    result[key] = value
+        return result
 
-    def load_from_file(self, filename):
-        try:
-            with open(filename, 'r') as f:
-                data = json.load(f)
-                print("Loaded users:", self.users)  # Debug statement
-                for key, value in data.items():
-                    # Deserialize DoublyLinkedList objects
-                    if 'ride_history' in value:
-                        value['ride_history'] = DoublyLinkedList.from_list(value['ride_history'])
-                    self.insert(key, value)
-            print(f"Data successfully loaded from {filename}")
-        except FileNotFoundError:
-            print(f"{filename} not found. Starting with an empty table.")
-        except Exception as e:
-            print(f"Error loading file {filename}: {e}")
-
-
+    @classmethod
+    def from_dict(cls, data_dict):
+        """
+        Creates a HashTable from a standard Python dictionary.
+        Handles special deserialization for nested DoublyLinkedList objects.
+        """
+        new_table = cls()
+        for key, value in data_dict.items():
+            # Deserialize DoublyLinkedList if present
+            if isinstance(value, dict) and 'ride_history' in value:
+                value = value.copy()
+                value['ride_history'] = DoublyLinkedList.from_list(value['ride_history'])
+            new_table.insert(key, value)
+        return new_table
 
     def insert(self, key, value):
         index = self.hash_function(key)
@@ -344,6 +383,21 @@ class Queue:
         if self.queue:
             return self.queue[0]
         return None
+    
+    def to_dict(self):
+        """
+        Converts the Queue into a dictionary for serialization.
+        """
+        return {"queue": self.queue}
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Reconstructs a Queue from a dictionary.
+        """
+        new_queue = cls()
+        new_queue.queue = data.get("queue", [])
+        return new_queue
 
 class PriorityQueue(MinHeap):
     def __init__(self):
@@ -357,6 +411,21 @@ class PriorityQueue(MinHeap):
 
     def peek(self):
         return self.heap[0][1] if self.heap else None
+
+    def to_dict(self):
+        """
+        Converts the PriorityQueue into a dictionary for serialization.
+        """
+        return {"heap": self.heap}
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Reconstructs a PriorityQueue from a dictionary.
+        """
+        new_pq = cls()
+        new_pq.heap = data.get("heap", [])
+        return new_pq
 
 class AVLTree:
     class Node:

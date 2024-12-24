@@ -9,8 +9,9 @@
         "license_number": "2",
         "rating": 0.0,
         "total_ratings": 0,
-        "current_location": null,
+        "current_location": "E-11",
         "active_ride": null,
-        "ride_history": []
+        "ride_history": [],
+        "availability": true
     }
 }

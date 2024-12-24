@@ -1,14 +1,18 @@
-# emergency_handler.py
 from data_structures import PriorityQueue
+from save_load import save_data_to_file, load_data_from_file
 import time
 import uuid
 
 class EmergencyHandler:
-    def __init__(self, ride_request, location_service, driver_management):
+    def __init__(self, ride_request, location_service, driver_management, file_path='emergency_requests.json'):
+        """
+        Initializes EmergencyHandler and loads emergency requests from the specified file.
+        """
         self.ride_request = ride_request
         self.location_service = location_service
         self.driver_mgmt = driver_management
-        self.emergency_requests = PriorityQueue()
+        self.file_path = file_path
+        self.emergency_requests = load_data_from_file(self.file_path, PriorityQueue)
 
     def add_emergency_request(self, user_id, pickup_location, dropoff_location):
         """
@@ -24,6 +28,8 @@ class EmergencyHandler:
         }
         print(f"Emergency request forwarded to 911 service: {request}")
         self.emergency_requests.push(1, request)  # Priority 1 for emergency requests
+        # Save updated emergency requests to file
+        save_data_to_file(self.emergency_requests, self.file_path)
         return True, request['id']
 
     def dispatch_emergency_ride(self):
@@ -35,6 +41,9 @@ class EmergencyHandler:
             return False, "No emergency requests in the queue."
 
         request = self.emergency_requests.pop()
+        # Save updated emergency requests to file
+        save_data_to_file(self.emergency_requests, self.file_path)
+
         # Simulate receiving nearest vehicle location from 911 service
         print(f"Fetching nearest emergency vehicle for request: {request['id']}")
         driver = self._find_nearest_driver(request['pickup_location'])

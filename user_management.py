@@ -1,13 +1,13 @@
-# user_management.py
 from data_structures import HashTable, DoublyLinkedList
+from save_load import save_data_to_file, load_data_from_file
 import uuid
 
 class UserManagement:
     def __init__(self):
-        self.users = HashTable()  # Store user data
-        self.active_sessions = HashTable()  # Track logged-in users
-        self.users.load_from_file('users_data.json')
-        
+        # Load users from file or initialize an empty HashTable
+        self.users = load_data_from_file('users_data.json', HashTable)
+        self.active_sessions = HashTable()  # Active sessions are temporary and not loaded
+
     def register_user(self, name, email, phone, password):
         user_id = str(uuid.uuid4())
         user_data = {
@@ -19,17 +19,16 @@ class UserManagement:
             'ride_history': DoublyLinkedList(),
             'active_ride': None
         }
-        
+
         if self.get_user_by_email(email):
             return False, "Email already registered"
-            
+
         self.users.insert(user_id, user_data)
-    
+
         # Save to file immediately
         self.users.save_to_file('users_data.json')
         return True, user_id
-    
-        
+
     def login_user(self, email, password):
         print("Debug: Users table contents:", self.users.table)  # Debug statement
         for bucket in self.users.table.values():
@@ -38,19 +37,23 @@ class UserManagement:
                 for key, user_data in bucket:
                     print("Debug: Checking user_data:", user_data)  # Debug statement
                     if isinstance(user_data, dict) and user_data.get('email') == email and user_data.get('password') == password:
-                        session_id = str(uuid.uuid4())
-                        self.active_sessions.insert(session_id, user_data['id'])
-                        return True, session_id
+                        session_id = str(uuid.uuid4())  # Generate a session ID
+                        self.active_sessions.insert(session_id, user_data['id'])  # Map session ID to user ID
+                        return True, session_id  # Return the session ID
+        print("Active Sessions:", self.active_sessions.table)
         return False, "Invalid credentials"
+   
 
 
 
-
-
-        
     def get_user_by_id(self, user_id):
-        return self.users.get(user_id)
-        
+        # Check if the provided user_id is a session ID
+        original_user_id = self.active_sessions.get(user_id)
+        if original_user_id:
+            return self.users.get(original_user_id)
+        return None  # Return None if neither session ID nor original user ID is found
+
+
     def get_user_by_email(self, email):
         for user_data in self.users.values():  # Use values() to get all user data
             if user_data['email'] == email:
@@ -62,5 +65,7 @@ class UserManagement:
         if user_data:
             user_data.update(updates)
             self.users.insert(user_id, user_data)
+            # Save updated data
+            self.users.save_to_file('users_data.json')
             return True
         return False

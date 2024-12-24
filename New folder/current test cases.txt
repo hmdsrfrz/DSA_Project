@@ -1,0 +1,10 @@
+login from user and driver simultaneously
+for now book one ride
+check if price is shown to driver and user
+check if driver can accept ride or not
+etc etc
+
+check with multiple drivers if the closest one is called
+add multiple users and check if u can send friend requests
+check if users can rideshare
+check the emergency rides at the end
