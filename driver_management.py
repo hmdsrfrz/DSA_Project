@@ -44,6 +44,12 @@ class DriverManagement:
                     if isinstance(driver_data, dict) and driver_data.get('email') == email and driver_data.get('password') == password:
                         return True, driver_id
         return False, "Invalid credentials"
+    
+    def update_driver(self, driver):
+        # Logic to save the updated driver data back to the data store
+        drivers_data = load_data_from_file('drivers.json', dict)  # Load existing drivers
+        drivers_data[driver['id']] = driver  # Update the driver using the ID as the key
+        save_data_to_file(drivers_data, 'drivers.json')  # Save updated drivers
 
     def update_driver_location(self, driver_id, location):
         driver_data = self.drivers.get(driver_id)
@@ -124,42 +130,73 @@ class DriverManagement:
             print("Invalid input. Please enter a valid number.")'''
     
     def view_ride_requests(self, driver_id):
-        ride_requests = load_data_from_file('ride_requests.json', PriorityQueue) or PriorityQueue()
+        # Load raw data from JSON file
+        ride_requests_raw = load_data_from_file('normal_requests.json', dict)
+        print(f"Debug: Raw ride requests loaded:\n{ride_requests_raw}")
+
+        # Check if the raw data contains the 'queue' key
+        if not ride_requests_raw or 'queue' not in ride_requests_raw:
+            print("No ride requests available.")
+            return
+
+        # Extract the queue and convert to PriorityQueue
+        try:
+            ride_requests = PriorityQueue()
+            for request in ride_requests_raw['queue']:
+                # Add requests to the priority queue with their distance or priority
+                priority = request.get('priority', 2)  # Default to priority 2 if missing
+                ride_requests.push(priority, request)
+            print(f"Debug: PriorityQueue state after loading:\n{ride_requests.heap}")
+        except Exception as e:
+            print(f"Error processing ride requests: {e}")
+            return
 
         if ride_requests.is_empty():
             print("No ride requests available.")
             return
 
         print("\n--- Ride Requests ---")
+        # Sort requests by priority for display
         requests_list = sorted(ride_requests.heap, key=lambda x: x[0])  # Sort by priority
         for idx, (_, request) in enumerate(requests_list, start=1):
-            print(f"{idx}. Priority: {request['priority']}, Pickup: {request['pickup_location']}, Dropoff: {request['dropoff_location']}, User ID: {request['user_id']}")
+            # Use .get() to avoid KeyError
+            print(f"{idx}. Priority: {request.get('priority', 'N/A')}, "
+                f"Pickup: {request.get('pickup_location', 'N/A')}, "
+                f"Dropoff: {request.get('dropoff_location', 'N/A')}, "
+                f"User  ID: {request.get('user_id', 'N/A')}")
 
         try:
-            # Driver selects a ride
+            # Prompt driver to select a ride
             choice = int(input("Enter the number of the ride to accept: ")) - 1
             if 0 <= choice < len(requests_list):
+                # Select the chosen request
                 selected_request = requests_list.pop(choice)[1]
 
-                # Update the queue
-                ride_requests.heap = requests_list
-                save_data_to_file(ride_requests, 'ride_requests.json')
+                # Debug: Show the selected request
+                print(f"Debug: Selected request details:\n{selected_request}")
 
-                # Move selected request to active rides
+                # Update the queue
+                ride_requests.heap = [(priority, req) for priority, req in requests_list]
+                save_data_to_file({'queue': ride_requests.to_list()}, 'normal_requests.json')
+                print("Debug: Updated normal requests saved successfully.")
+
+                # Move the selected request to active rides
                 active_rides = load_data_from_file('active_rides.json', list) or []
-                active_rides.append({
-                    "id": selected_request["id"],
-                    "user_id": selected_request["user_id"],
+                active_ride = {
+                    "id": selected_request.get("id"),
+                    "user_id": selected_request.get("user_id"),
                     "driver_id": driver_id,
-                    "pickup_location": selected_request["pickup_location"],
-                    "dropoff_location": selected_request["dropoff_location"],
+                    "pickup_location": selected_request.get("pickup_location"),
+                    "dropoff_location": selected_request.get("dropoff_location"),
                     "status": "ongoing",
                     "start_time": time.time()
-                })
+                }
+                active_rides.append(active_ride)
                 save_data_to_file(active_rides, 'active_rides.json')
 
+                print(f"Debug: Added ride to active rides:\n{active_ride}")
                 print("Ride accepted successfully!")
             else:
-                print("Invalid selection.")
+                print("Invalid selection. Please choose a valid ride number.")
         except ValueError:
             print("Invalid input. Please enter a valid number.")

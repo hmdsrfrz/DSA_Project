@@ -43,15 +43,33 @@ class UserManagement:
         print("Active Sessions:", self.active_sessions.table)
         return False, "Invalid credentials"
    
-
-
-
-    def get_user_by_id(self, user_id):
+    '''def get_user_by_id(self, user_id):
         # Check if the provided user_id is a session ID
         original_user_id = self.active_sessions.get(user_id)
         if original_user_id:
             return self.users.get(original_user_id)
-        return None  # Return None if neither session ID nor original user ID is found
+        return None  # Return None if neither session ID nor original user ID is found'''
+    
+    def get_user_by_id(self, user_id):
+        """Get user by either their direct user ID or session ID."""
+        print(f"Debug: Looking up user with ID: {user_id}")
+        print(f"Debug: Current users in HashTable: {self.users.to_dict()}")
+        
+        # First try to get user directly from users table
+        user = self.users.get(user_id)
+        print(f"Debug: Direct user lookup result: {user}")
+        
+        if user:
+            return user
+            
+        # If not found, check if it's a session ID
+        original_user_id = self.active_sessions.get(user_id)
+        print(f"Debug: Session lookup result: {original_user_id}")
+        
+        if original_user_id:
+            return self.users.get(original_user_id)
+            
+        return None
 
 
     def get_user_by_email(self, email):

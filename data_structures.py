@@ -22,7 +22,7 @@ class MinHeap:
 
     def _heapify_up(self, index):
         parent = (index - 1) // 2
-        if index > 0 and self.heap[index] < self.heap[parent]:
+        if index > 0 and self.heap[index][0] < self.heap[parent][0]:  # Compare only priorities
             self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
             self._heapify_up(parent)
 
@@ -30,9 +30,9 @@ class MinHeap:
         smallest = index
         left = 2 * index + 1
         right = 2 * index + 2
-        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
+        if left < len(self.heap) and self.heap[left][0] < self.heap[smallest][0]:  # Compare only priorities
             smallest = left
-        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
+        if right < len(self.heap) and self.heap[right][0] < self.heap[smallest][0]:  # Compare only priorities
             smallest = right
         if smallest != index:
             self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
@@ -42,12 +42,12 @@ class MinHeap:
         if self.heap:
             return self.heap[0]
         return None
+
     def is_empty(self):
         return len(self.heap) == 0
 
     def size(self):
         return len(self.heap)
-
 
 
 class Graph:
@@ -124,23 +124,18 @@ class Graph:
         return distances, previous
 
     def get_shortest_path(self, start, end):
-        if start not in self.nodes or end not in self.nodes:
-            raise ValueError(f"Invalid nodes: {start} or {end} not found in the graph.")
-        
         distances, previous = self.dijkstra(start)
-
         if distances[end] == float('infinity'):
-            return None, []  # No path exists
+            return None  # No path exists
 
-        # Reconstruct the path
         path = []
         current = end
-        while current:
+        while current is not None:
             path.append(current)
             current = previous[current]
-
         path.reverse()
-        return distances[end], path
+        
+        return path  # Return only the path
 
         
 
@@ -404,29 +399,29 @@ class PriorityQueue(MinHeap):
         super().__init__()
 
     def push(self, priority, item):
-        super().push((priority, item))
+        super().push((priority, item))  # Push a tuple of (priority, item)
 
     def pop(self):
-        return super().pop()[1] if self.heap else None
+        return super().pop()[1] if self.heap else None  # Return only the item
 
     def peek(self):
-        return self.heap[0][1] if self.heap else None
+        return self.heap[0][1] if self.heap else None  # Return only the item
 
     def to_dict(self):
-        """
-        Converts the PriorityQueue into a dictionary for serialization.
-        """
         return {"heap": self.heap}
+    
+        
+    def to_list(self):
+        return [item for _, item in self.heap]  # Extract items from the heap
+
+
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Reconstructs a PriorityQueue from a dictionary.
-        """
         new_pq = cls()
         new_pq.heap = data.get("heap", [])
         return new_pq
-
+    
 class AVLTree:
     class Node:
         def __init__(self, key, value):

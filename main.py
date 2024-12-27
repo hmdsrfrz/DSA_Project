@@ -17,7 +17,7 @@ from data_structures import HashTable
 from polling import poll_file, reload_drivers, reload_users
 
 from dashboards import Dashboards
-from map_visualization import visualize_map, visualize_ride_path
+from map_visualization import visualize_map
 
 
 def initialize_system():
@@ -67,8 +67,8 @@ def main():
     Dashboards = system['dashboards']
 
     # Start polling threads for user and driver data
-    user_poll_thread = threading.Thread(target=poll_file, args=('users_data.json', reload_users), daemon=True)
-    driver_poll_thread = threading.Thread(target=poll_file, args=('drivers_data.json', reload_drivers), daemon=True)
+    user_poll_thread = threading.Thread(target=poll_file, args=('users_data.json', reload_users, 1), daemon=True)
+    driver_poll_thread = threading.Thread(target=poll_file, args=('drivers_data.json', reload_drivers, 1), daemon=True)
     user_poll_thread.start()
     driver_poll_thread.start()
 

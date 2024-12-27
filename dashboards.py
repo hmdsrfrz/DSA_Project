@@ -4,6 +4,7 @@ import os
 import networkx as nx
 import matplotlib.pyplot as plt
 import sys
+import traceback
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,7 +18,7 @@ from pricing import Pricing
 from ride_history import RideHistory
 from map_data import IslamabadMap, is_valid_location, LOCATIONS
 from data_structures import Graph, HashTable
-from map_visualization import visualize_map, visualize_ride_path
+from map_visualization import visualize_map
 from friend_management import FriendManagement
 
 
@@ -33,18 +34,18 @@ class Dashboards:
         self.friend_mgmt = friend_mgmt
 
     def run_user_login(self):
-        print("\n--- User Login ---")
         email = input("Enter email: ")
         password = input("Enter password: ")
-
-        success, result = self.user_mgmt.login_user(email, password)
+        
+        success, session_id = self.user_mgmt.login_user(email, password)
         if success:
-            session_id = result
+            user_id = self.user_mgmt.active_sessions.get(session_id)  # Resolve user_id from session_id
             print("Login successful!")
-            print("Session ID after login:", session_id)
-            self.user_dashboard(session_id)  # Pass session_id to access the dashboard
+            print("User ID after login:", user_id)
+            self.user_dashboard(user_id)  # Pass correct user_id
         else:
-            print(result)  # Print error message from login failure
+            print("Invalid Login Details, Please try again.")
+
 
     def run_user_signup(self):
         print("\n--- User Signup ---")
@@ -66,7 +67,9 @@ class Dashboards:
         if not user_id:
                 print("Error: User ID not found for session.")
                 return'''
-        
+            
+                # Resolve session ID to actual user ID
+
         print("User ID in Dashboard:", user_id)
         while True:
             updates = self.ride_request.get_user_updates(user_id)
@@ -122,7 +125,11 @@ class Dashboards:
                         success, ride_id = self.ride_request.request_ride(user_id, pickup, destination)
                         if success:
                             print("Ride requested successfully. Ride ID:", ride_id)
-                            visualize_ride_path(islamabad_map, pickup, destination)
+                            try:
+                                islamabad_map.visualize_ride_path(pickup, destination)
+                            except Exception as e:
+                                print(f"Error visualizing path: {e}")
+                                traceback.print_exc()
                         else:
                             print("Failed to request ride.")
                     else:
@@ -179,7 +186,7 @@ class Dashboards:
                         success, ride_id = self.emergency_handler.add_emergency_request(user_id, pickup, destination)
                         if success:
                             print("Emergency ride booked successfully. Ride ID:", ride_id)
-                            visualize_ride_path(self.location_service, pickup, destination)
+                            islamabad_map.visualize_ride_path(self.location_service, pickup, destination)
                         else:
                             print("Failed to book emergency ride.")
                     else:
@@ -221,6 +228,7 @@ class Dashboards:
                             print(message)
                     except ValueError:
                         print("Invalid input")
+                        
             elif choice == '8':
                 visualize_map(self.location_service)
             elif choice == '10':
@@ -343,6 +351,7 @@ class Dashboards:
 
             elif choice == '5':
                 driver = self.driver_mgmt.get_driver_by_id(driver_id)
+                print(driver)
                 if not driver['active_ride']:
                     print("You don't have any active rides.")
                     continue

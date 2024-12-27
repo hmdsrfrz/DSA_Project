@@ -1,1 +1,13 @@
-{}
+{
+    "friend_requests": {
+        "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4": []
+    },
+    "friends_list": {
+        "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4": [
+            "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1"
+        ],
+        "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1": [
+            "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4"
+        ]
+    }
+}

@@ -20,8 +20,11 @@ def calculate_file_hash(filename):
     try:
         with open(filename, 'rb') as f:
             file_content = f.read()
-            return hashlib.sha256(file_content).hexdigest()
+            file_hash = hashlib.sha256(file_content).hexdigest()
+            #print(f"Debug: Calculated hash for {filename}: {file_hash}")  # Debugging statement
+            return file_hash
     except FileNotFoundError:
+        print(f"Debug: File {filename} not found.")
         return None
 
 def poll_file(filename, callback, poll_interval=1):
@@ -47,7 +50,7 @@ def reload_users(filename):
     Reloads the user data from the specified file and updates the user management system.
     """
     try:
-        user_mgmt.users.load_from_file(filename)
+        user_mgmt.users.load_data_from_file(filename)
         print(f"User data reloaded from {filename}")
     except FileNotFoundError:
         print(f"Error: {filename} not found.")
@@ -58,10 +61,19 @@ def reload_drivers(filename):
     """
     Reloads the driver data from the specified file and updates the driver management system.
     """
+    print(f"Attempting to reload driver data from {filename}...")  # Debugging statement
     try:
-        driver_mgmt.drivers.load_from_file(filename)
-        print(f"Driver data reloaded from {filename}")
+        # Debugging: Check if the file exists before trying to load it
+        if not os.path.exists(filename):
+            print(f"Debug: File {filename} does not exist.")
+            raise FileNotFoundError(f"{filename} not found.")
+
+        # Attempt to load the driver data
+        print("Debug: Calling load_from_file method...")
+        driver_mgmt.drivers.load_data_from_file(filename)
+        
+        print(f"Driver data reloaded successfully from {filename}.")  # Debugging statement
     except FileNotFoundError:
-        print(f"Error: {filename} not found.")
+        print(f"Error: {filename} not found.")  # Error message
     except Exception as e:
-        print(f"An error occurred while reloading drivers: {e}")
+        print(f"An error occurred while reloading drivers: {e}")  # General error message
