@@ -154,7 +154,7 @@ LOCATIONS = {
     # Added Hospitals (unique locations)
     'PIMS Hospital': (-1, 2.7),
     'Shifa Hospital': (-3, 6.5),
-    'Ali Medical Center': (3.5, 2),
+    'Ali Medical Hospital': (3.5, 2),
     # Added Fire Stations (unique locations)
     'Fire Station F-7': (2.5, 0.5),
     'Fire Station G-9': (-2.5, 2.5),
@@ -194,9 +194,9 @@ DISTANCES = {
     ('Shifa Hospital', 'NUST'): 3,
     ('Shifa Hospital', 'G-11 Markaz'): 2,
     ('Shifa Hospital', 'I-8 Markaz'): 6,
-    ('Ali Medical Center', 'FAST University'): 2,
-    ('Ali Medical Center', 'Air University'): 2,
-    ('Ali Medical Center', 'COMSATS'): 3,
+    ('Ali Medical Hospital', 'FAST University'): 2,
+    ('Ali Medical Hospital', 'Air University'): 2,
+    ('Ali Medical Hospital', 'COMSATS'): 3,
     # Connections for fire stations
     ('Fire Station F-7', 'F-7 Markaz'): 1,
     ('Fire Station F-7', 'Centaurus Mall'): 2,
