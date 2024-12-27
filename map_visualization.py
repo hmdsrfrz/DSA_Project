@@ -379,66 +379,68 @@ import plotly.graph_objects as go
 
 
 def visualize_map(self, highlight_path=None):
-  """
-  Visualize the map with locations, distances, and optionally highlight a path.
+    """
+    Visualize the map with locations, distances, and optionally highlight a path.
 
-  Args:
-      highlight_path: A list of locations representing the path to highlight.
-  """
+    Args:
+        highlight_path: A list of locations representing the path to highlight.
+    """
 
-  plt.figure(figsize=(12, 12))
+    plt.figure(figsize=(12, 12))
+    
 
-  # Plot locations with different colors based on type
-  for loc, (x, y) in LOCATIONS.items():
-      if 'Hospital' in loc:
-          plt.scatter(x, y, color='red', label='Hospital', s=200, alpha=0.7)
-      elif 'Fire Station' in loc:
-          plt.scatter(x, y, color='orange', label='Fire Station', s=200, alpha=0.7)
-      else:
-          plt.scatter(x, y, color='blue', label='Location', s=200, alpha=0.5)
+    for loc, (x, y) in LOCATIONS.items():
+        # Differentiate types of locations
+        if 'Hospital' in loc:
+            plt.scatter(x, y, color='red', label='Hospital' if 'Hospital' not in plt.gca().get_legend_handles_labels()[1] else "", s=200, alpha=0.7)
+        elif 'Fire Station' in loc:
+            plt.scatter(x, y, color='orange', label='Fire Station' if 'Fire Station' not in plt.gca().get_legend_handles_labels()[1] else "", s=200, alpha=0.7)
+        else:
+            plt.scatter(x, y, color='blue', label='Location' if 'Location' not in plt.gca().get_legend_handles_labels()[1] else "", s=200, alpha=0.5)
 
-      # Place text labels closer to nodes with slight adjustment based on location
-      ha = 'center'  # Horizontal alignment
-      va = 'center'  # Vertical alignment
-      if x < 0:
-          ha = 'right'
-      elif x > plt.xlim()[1]:
-          ha = 'left'
-      if y < 0:
-          va = 'top'
-      elif y > plt.ylim()[1]:
-          va = 'bottom'
-      plt.text(x, y + (0.1 if va == 'top' else -0.1), loc, fontsize=8, ha=ha, va=va)
 
-  # Plot connections between locations
-  for (loc1, loc2), dist in DISTANCES.items():
-      x1, y1 = LOCATIONS[loc1]
-      x2, y2 = LOCATIONS[loc2]
-      plt.plot([x1, x2], [y1, y2], 'k-', linewidth=1.5)
-      plt.text((x1 + x2) / 2, (y1 + y2) / 2, f'{dist}', fontsize=8, color='blue', ha='center', va='center')
+        # Place text labels closer to nodes with slight adjustment based on location
+        ha = 'center'  # Horizontal alignment
+        va = 'center'  # Vertical alignment
+        if x < 0:
+            ha = 'right'
+        elif x > plt.xlim()[1]:
+            ha = 'left'
+        if y < 0:
+            va = 'top'
+        elif y > plt.ylim()[1]:
+            va = 'bottom'
+        plt.text(x, y + (0.1 if va == 'top' else -0.1), loc, fontsize=8, ha=ha, va=va)
 
-  # Highlight the path if provided
-  if highlight_path:
-      path_edges = list(zip(highlight_path[:-1], highlight_path[1:]))
-      for loc1, loc2 in path_edges:
-          x1, y1 = LOCATIONS[loc1]
-          x2, y2 = LOCATIONS[loc2]
-          plt.plot([x1, x2], [y1, y2], 'r-', linewidth=2)  # Highlight path in red
+    # Plot connections between locations
+    for (loc1, loc2), dist in DISTANCES.items():
+        x1, y1 = LOCATIONS[loc1]
+        x2, y2 = LOCATIONS[loc2]
+        plt.plot([x1, x2], [y1, y2], 'k-', linewidth=1.5)
+        plt.text((x1 + x2) / 2, (y1 + y2) / 2, f'{dist}', fontsize=8, color='blue', ha='center', va='center')
 
-      # Highlight start and end nodes
-      start_node = highlight_path[0]
-      end_node = highlight_path[-1]
-      x_start, y_start = LOCATIONS[start_node]
-      x_end, y_end = LOCATIONS[end_node]
-      plt.scatter(x_start, y_start, color='red', s=300, marker='o')  # Highlight start node in red
-      plt.scatter(x_end, y_end, color='green', s=300, marker='o')  # Highlight end node in green
+    # Highlight the path if provided
+    if highlight_path:
+        path_edges = list(zip(highlight_path[:-1], highlight_path[1:]))
+        for loc1, loc2 in path_edges:
+            x1, y1 = LOCATIONS[loc1]
+            x2, y2 = LOCATIONS[loc2]
+            plt.plot([x1, x2], [y1, y2], 'r-', linewidth=2)  # Highlight path in red
 
-  plt.title('Map of Locations, Hospitals, and Fire Stations')
-  plt.xlabel('X Coordinate')
-  plt.ylabel('Y Coordinate')
-  plt.grid(True)
-  plt.legend()
-  plt.show()
+        # Highlight start and end nodes
+        start_node = highlight_path[0]
+        end_node = highlight_path[-1]
+        x_start, y_start = LOCATIONS[start_node]
+        x_end, y_end = LOCATIONS[end_node]
+        plt.scatter(x_start, y_start, color='red', s=300, marker='o')  # Highlight start node in red
+        plt.scatter(x_end, y_end, color='green', s=300, marker='o')  # Highlight end node in green
+
+    plt.title('Map of Locations, Hospitals, and Fire Stations')
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
 
 
