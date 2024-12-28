@@ -13,8 +13,9 @@ class RideRequest:
         self.pricing = pricing  # Added missing service
         self.rating_system = RatingSystem  # Store rating system instance
         self.map_visualization = map_visualization
-        self.normal_requests = load_data_from_file('normal_requests.json', Queue) or Queue()  # Added fallback
+        self.normal_requests = load_data_from_file('normal_requests.json', Queue) or Queue()
         self.emergency_requests = load_data_from_file('emergency_requests.json', PriorityQueue) or PriorityQueue()
+
         self.active_rides = load_data_from_file('active_rides.json', HashTable) or HashTable()
 
     '''def request_ride(self, user_id, pickup_location, dropoff_location, is_emergency=False):
@@ -94,7 +95,7 @@ class RideRequest:
 
         return True, request'''
     
-    def request_ride(self, user_id, pickup_location, dropoff_location, is_emergency=False):
+    '''def request_ride(self, user_id, pickup_location, dropoff_location, is_emergency=False):
         user = self.user_mgmt.get_user_by_id(user_id)
         if not user or user['active_ride']:
             print(f"Debug: User validation failed. User data: {user}")
@@ -154,10 +155,78 @@ class RideRequest:
         )
         except Exception as e:
             print(f"Error during visualization: {e}")
+        return True, request'''
+    
+
+    def request_ride(self, user_id, pickup_location, dropoff_location, is_emergency=False):
+        user = self.user_mgmt.get_user_by_id(user_id)
+        
+        # Check if the user has an active ride
+        if not user or user['active_ride']:
+            # Check if the active ride is not completed
+            active_ride_id = user['active_ride']
+            active_ride = self.active_rides.get(active_ride_id) if active_ride_id else None
+            
+            if active_ride and active_ride['status'] != 'completed':
+                return False, "You have an active ride that is not completed. Please complete it before requesting another ride."
+
+        # Validate graph and locations
+        if not self.location_service.graph.nodes:
+            print("Debug: Graph is empty. Reinitializing...")
+            self.location_service.graph = self.location_service._initialize_map()
+
+        if pickup_location not in self.location_service.graph.nodes:
+            print(f"Debug: Pickup location '{pickup_location}' not found in graph.")
+            return False, "Invalid pickup location"
+
+        if dropoff_location not in self.location_service.graph.nodes:
+            print(f"Debug: Dropoff location '{dropoff_location}' not found in graph.")
+            return False, "Invalid dropoff location"
+
+        # Calculate distance and price
+        distance = self.location_service.graph.get_shortest_path_distance(pickup_location, dropoff_location)
+        if distance is None:
+            print(f"Debug: No path found between '{pickup_location}' and '{dropoff_location}'.")
+            return False, "Could not calculate route"
+
+        price = self.pricing.calculate_fare(distance)
+        print(f"Debug: Calculated price: {price}, Distance: {distance}")
+
+        # Add request to queue
+        request = {
+            'id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'pickup_location': pickup_location,
+            'dropoff_location': dropoff_location,
+            'status': 'pending',
+            'timestamp': time.time(),
+            'distance': distance,
+            'price': price,
+            'priority': 1 if is_emergency else 2,
+            'type': 'emergency' if is_emergency else 'normal'
+        }
+
+        if is_emergency:
+            self.emergency_requests.push(1, request)
+            print(f"Debug: Emergency request added: {request}")
+        else:
+            self.normal_requests.enqueue(request)
+            print(f"Debug: Normal request added: {request}")
+
+        save_data_to_file(self.normal_requests, 'normal_requests.json')
+        
+        # Visualize the shortest path
+        print("Debug: Visualizing shortest path...")
+        try:
+            self.map_visualization.visualize_ride_path(
+                location_service=self.location_service,  # Location service
+                start=pickup_location,                  # Pickup location (start)
+                end=dropoff_location                    # Dropoff location (end)
+            )
+        except Exception as e:
+            print(f"Error during visualization: {e}")
+        
         return True, request
-
-
-
 
 
     def _sync_driver_requests(self):
@@ -216,7 +285,6 @@ class RideRequest:
         ride_id = str(uuid.uuid4())
         ride_data = {
             'id': ride_id,
-            'request': request,
             'driver_id': driver_id,
             'status': 'assigned',
             'start_time': time.time()
@@ -237,7 +305,6 @@ class RideRequest:
 
         return ride_id
 
-
     def complete_ride(self, ride_id):
         ride_data = self.active_rides.get(ride_id)
         if not ride_data:
@@ -247,7 +314,7 @@ class RideRequest:
         ride_data['end_time'] = time.time()
         ride_data['duration'] = ride_data['end_time'] - ride_data['start_time']
 
-        user_id = ride_data['request']['user_id']
+        user_id = ride_data['user_id']  # Assuming user_id is directly in ride_data
         driver_id = ride_data['driver_id']
 
         user = self.user_mgmt.get_user_by_id(user_id)
@@ -264,21 +331,10 @@ class RideRequest:
             self.active_rides.delete(ride_id)
             save_data_to_file(self.active_rides, 'active_rides.json')
 
-            # Prompt for post-ride feedback
-            print("\n--- Post-Ride Feedback ---")
-            print(f"Ride ID: {ride_id}")
-            print(f"Driver: {driver['name']} ({driver['vehicle_type']})")
-            try:
-                rating = float(input("Rate the driver (1-5): "))
-                feedback = input("Leave any additional feedback (optional): ")
-                success, message = RatingSystem.post_ride_feedback(driver_id, ride_id, rating, feedback)
-                print(message)
-            except ValueError:
-                print("Invalid rating. Feedback skipped.")
-
-            return True, "Ride completed successfully"
+            # Notify the user to provide feedback
+            return True, f"Ride completed successfully. Please provide feedback for your ride ID: {ride_id}."
+        
         return False, "Error updating user or driver profiles"
-    
     def _find_nearest_driver(self, pickup_location):
         available_drivers = self.driver_mgmt.get_available_drivers()
         nearest_driver = None
@@ -347,7 +403,7 @@ class RideRequest:
         ride_id = ride_request['id']
         driver_id = ride_request['driver_id']
 
-        # Update the active ride in the active rides list
+        # Create the active ride data
         active_ride = {
             "id": ride_id,
             "user_id": ride_request['user_id'],
@@ -358,10 +414,12 @@ class RideRequest:
             "start_time": time.time()
         }
 
-        # Load current active rides
-        active_rides = load_data_from_file('active_rides.json', list) or []
-        active_rides.append(active_ride)
-        save_data_to_file(active_rides, 'active_rides.json')
+        # Load current active rides from the JSON file
+        active_rides = load_data_from_file('active_rides.json', dict) or {}
+
+        # Update the active rides dictionary with the new ride
+        active_rides[ride_id] = active_ride  # Use ride_id as the key
+        save_data_to_file(active_rides, 'active_rides.json')  # Save the updated active rides
 
         # Update the driver's active ride
         driver = self.driver_mgmt.get_driver_by_id(driver_id)
@@ -375,7 +433,7 @@ class RideRequest:
             print("Error: Driver not found.")
 
         return True, "Ride accepted successfully."
-
+    
     def _calculate_distance(self, location1, location2):
         return self.location_service.get_distance_between(location1, location2) or 0
 

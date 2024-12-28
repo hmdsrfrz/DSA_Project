@@ -7,10 +7,15 @@ class LocationService:
         self.map_data = map_data  
         self.file_path = file_path
         self.graph = load_data_from_file(self.file_path, Graph)
-        if not self.graph:
+
+        # Ensure the loaded graph is reconstructed as a Graph instance
+        if isinstance(self.graph, dict):
+            self.graph = Graph.from_dict(self.graph)
+        elif not self.graph:
             self.graph = Graph()
             self._initialize_map()
-            save_data_to_file(self.file_path, self.graph)
+            save_data_to_file(self.graph, self.file_path)
+
 
     def _initialize_map(self):
         """

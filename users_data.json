@@ -1,20 +1,13 @@
 {
-    "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1": {
-        "id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+    "1e5120c6-3f2d-4639-8338-9a0c3588ac72": {
+        "id": "1e5120c6-3f2d-4639-8338-9a0c3588ac72",
         "name": "h",
         "email": "h",
-        "phone": "1",
-        "password": "1",
-        "ride_history": [],
-        "active_ride": null
-    },
-    "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4": {
-        "id": "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
-        "name": "hh",
-        "email": "hh",
-        "phone": "3",
-        "password": "2",
-        "ride_history": [],
+        "phone": "h",
+        "password": "h",
+        "ride_history": {
+            "data": []
+        },
         "active_ride": null
     }
 }

@@ -1,3 +1,5 @@
+from save_load  import save_data_to_file, load_data_from_file
+
 class RatingSystem:
     def __init__(self, driver_management):
         self.driver_mgmt = driver_management
@@ -31,6 +33,6 @@ class RatingSystem:
 
         # Save updated driver data
         self.driver_mgmt.drivers.insert(driver_id, driver)
-        self.driver_mgmt.drivers.save_to_file('drivers_data.json')
+        save_data_to_file(self.driver_mgmt, 'drivers_data.json')
 
         return True, "Feedback submitted successfully"

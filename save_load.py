@@ -1,50 +1,72 @@
-#save_load.py
-
 import json
-from file_lock import file_lock
+import os
+import threading
+from data_structures import DoublyLinkedList, HashTable
 
+
+
+# Custom encoder to handle non-serializable objects
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, 'to_dict'):
+            return obj.to_dict()  # Convert objects with 'to_dict()' method
+        if hasattr(obj, 'to_list'):
+            return obj.to_list()  # Convert LinkedList to list
+        return super().default(obj)  # Fallback for unsupported objects
+
+# Universal save function
 def save_data_to_file(data, filename):
-    """Save data to a file with thread-safe locking."""
     try:
-        if hasattr(data, "to_dict"):
-            data = data.to_dict()  # Use to_dict if the object supports it
+        if isinstance(data, Queue):
+            data = list(data.queue)  # Convert Queue to list
+        elif isinstance(data, PriorityQueue):
+            data = [(priority, item) for priority, item in data.items()]
+        elif isinstance(data, HashTable):
+            data = data.to_dict()
 
-    
-        if hasattr(data, "to_list"):
-            data = data.to_list()  # Convert to a list if the object supports it
-
-        with file_lock:  # Lock the file during the save operation
-            with open(filename, 'w') as f:
-                json.dump(data, f, indent=4)
-        print(f"Data successfully saved to {filename}")
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=4, cls=CustomJSONEncoder)
+        return True
     except Exception as e:
-        print(f"Error saving to file {filename}: {e}")
+        print(f"Error saving to {filename}: {e}")
+        return False
 
-def load_data_from_file(filename, data_type):
-    """Load data from a file with thread-safe locking."""
+
+# Universal load function with data type handling
+def load_data_from_file(filename, data_type=dict):
     try:
-        with file_lock:  # Lock the file during the load operation
-            with open(filename, 'r') as f:
-                data = json.load(f)
-
-        if hasattr(data_type, "from_dict"):
-            return data_type.from_dict(data)  # Use from_dict if the class supports it
+        if not isinstance(filename, str):
+            raise TypeError("Filename must be a string.")
         
-        if hasattr(data_type, "from_list"):
-            return data_type.from_list(data)  # Use from_list if the class supports it
+        # Check if the file exists and is not empty
+        if not os.path.exists(filename) or os.path.getsize(filename) == 0:
+            print(f"File {filename} is empty or does not exist. Returning empty {data_type.__name__}.")
+            return data_type()
 
-        return data  # Return raw data for other types
+        with open(filename, 'r') as f:
+            data = json.load(f)
+
+        # Convert to appropriate data structure
+        if data_type == HashTable:
+            if isinstance(data, dict):
+                return HashTable.from_dict(data)
+            else:
+                print(f"Warning: Data from {filename} is not a dict. Initializing empty HashTable.")
+                return HashTable()
+        
+        elif data_type == DoublyLinkedList:
+            if isinstance(data, list):
+                return DoublyLinkedList.from_list(data)
+            else:
+                print(f"Warning: Data from {filename} is not a list. Initializing empty DoublyLinkedList.")
+                return DoublyLinkedList()
+
+        return data  # Fallback for general dict/list cases
+
     except json.JSONDecodeError:
-        print(f"Error loading file {filename}: File is empty or contains invalid JSON. Reinitializing with default {data_type}.")
-        default_data = data_type() if callable(data_type) else {}
-        save_data_to_file(default_data, filename)
-        return default_data
-    except FileNotFoundError:
-        print(f"{filename} not found. Creating a new file with default {data_type}.")
-        default_data = data_type() if callable(data_type) else {}
-        save_data_to_file(default_data, filename)
-        return default_data
-    except Exception as e:
-        print(f"Unexpected error loading file {filename}: {e}")
-        return None
+        print(f"JSON decode error in {filename}: File is likely empty or corrupted.")
+        return data_type()  # Return an empty structure on error
 
+    except Exception as e:
+        print(f"Unexpected error loading {filename}: {e}")
+        return data_type()

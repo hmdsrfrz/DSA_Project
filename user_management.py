@@ -1,12 +1,14 @@
 from data_structures import HashTable, DoublyLinkedList
 from save_load import save_data_to_file, load_data_from_file
+from rating_system import RatingSystem
 import uuid
 
 class UserManagement:
-    def __init__(self):
+    def __init__(self, islamabad_map):
         # Load users from file or initialize an empty HashTable
-        self.users = load_data_from_file('users_data.json', HashTable)
+        self.users = load_data_from_file('users_data.json', HashTable) or HashTable()
         self.active_sessions = HashTable()  # Active sessions are temporary and not loaded
+        self.islamabad_map = islamabad_map 
 
     def register_user(self, name, email, phone, password):
         user_id = str(uuid.uuid4())
@@ -26,22 +28,30 @@ class UserManagement:
         self.users.insert(user_id, user_data)
 
         # Save to file immediately
-        self.users.save_to_file('users_data.json')
+        save_data_to_file(self.users, 'users_data.json')
         return True, user_id
 
     def login_user(self, email, password):
         print("Debug: Users table contents:", self.users.table)  # Debug statement
-        for bucket in self.users.table.values():
+        
+        # Iterate through each bucket in the hash table
+        for bucket in self.users.table:  
             print("Debug: Current bucket:", bucket)  # Debug statement
-            if bucket:  # Ensure the bucket is not empty
-                for key, user_data in bucket:
+            
+            if bucket:  # Check if the bucket is not empty
+                for key, user_data in bucket:  # Iterate through key-value pairs
                     print("Debug: Checking user_data:", user_data)  # Debug statement
+                    
+                    # Validate user by email and password
                     if isinstance(user_data, dict) and user_data.get('email') == email and user_data.get('password') == password:
-                        session_id = str(uuid.uuid4())  # Generate a session ID
+                        session_id = str(uuid.uuid4())  # Generate session ID
                         self.active_sessions.insert(session_id, user_data['id'])  # Map session ID to user ID
-                        return True, session_id  # Return the session ID
+                        return True, session_id  # Successful login
+            
         print("Active Sessions:", self.active_sessions.table)
-        return False, "Invalid credentials"
+        return False, "Invalid credentials"  # If no match is found
+
+
    
     '''def get_user_by_id(self, user_id):
         # Check if the provided user_id is a session ID
@@ -84,6 +94,53 @@ class UserManagement:
             user_data.update(updates)
             self.users.insert(user_id, user_data)
             # Save updated data
-            self.users.save_to_file('users_data.json')
+            save_data_to_file(self.users, 'users_data.json')
             return True
         return False
+
+    def provide_feedback(self, user_id):
+        """Provide feedback for the user's most recent active ride."""
+        # Load active rides from the JSON file
+        active_rides = load_data_from_file('active_rides.json', HashTable) or HashTable()
+
+        # Find the most recent active ride for the user
+        recent_ride = None
+        for ride in active_rides.values():  # Assuming active_rides is a HashTable
+            if ride['user_id'] == user_id:
+                recent_ride = ride  # Store the most recent ride found
+
+        if not recent_ride:
+            print("No active ride found for the user.")
+            return
+
+        # Retrieve the active ride data
+        ride_id = recent_ride['id']  # Assuming ride data contains 'id'
+
+        print("\n--- Post-Ride Feedback ---")
+        try:
+            rating = float(input("Rate the driver (1-5): "))  # Convert input to float
+            feedback = input("Leave any additional feedback (optional): ")
+            success, message = RatingSystem.post_ride_feedback(recent_ride['driver_id'], ride_id, rating, feedback)
+            print(message)
+        except ValueError:
+            print("Invalid rating. Feedback skipped.")
+
+    def visualize_last_active_ride_path(self, user_id):
+        """Visualize the shortest path for the user's most recent active ride."""
+        # Load active rides from the JSON file
+        active_rides = load_data_from_file('active_rides.json', HashTable) or HashTable()
+
+        # Find the most recent active ride for the user
+        for ride in active_rides.values():  # Assuming active_rides is a HashTable
+            if ride['user_id'] == user_id:
+                pickup_location = ride['pickup_location']
+                dropoff_location = ride['dropoff_location']
+
+                # Visualize the ride path using the IslamabadMap instance
+                try:
+                    self.islamabad_map.visualize_ride_path(pickup_location, dropoff_location)
+                except Exception as e:
+                    print(f"Error visualizing ride path: {e}")
+                return
+
+        print("No active ride found for the user.")

@@ -230,7 +230,7 @@ def scale_locations(locations, factor):
 LOCATIONS = scale_locations(LOCATIONS, SCALING_FACTOR)
 
 # Plot the map
-def plot_map(locations, distances):
+'''def plot_map(locations, distances):
     plt.figure(figsize=(12, 12))
 
     for loc, (x, y) in locations.items():
@@ -256,7 +256,7 @@ def plot_map(locations, distances):
     plt.legend()
     plt.show()
 
-plot_map(LOCATIONS, DISTANCES)
+plot_map(LOCATIONS, DISTANCES)'''
 
 def visualize_map(self, highlight_path=None):
     """
