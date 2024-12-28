@@ -4,11 +4,10 @@ from rating_system import RatingSystem
 import uuid
 
 class UserManagement:
-    def __init__(self, islamabad_map):
+    def __init__(self):
         # Load users from file or initialize an empty HashTable
-        self.users = load_data_from_file('users_data.json', HashTable) or HashTable()
+        self.users = load_data_from_file('users_data.json', HashTable)
         self.active_sessions = HashTable()  # Active sessions are temporary and not loaded
-        self.islamabad_map = islamabad_map 
 
     def register_user(self, name, email, phone, password):
         user_id = str(uuid.uuid4())
@@ -33,25 +32,17 @@ class UserManagement:
 
     def login_user(self, email, password):
         print("Debug: Users table contents:", self.users.table)  # Debug statement
-        
-        # Iterate through each bucket in the hash table
-        for bucket in self.users.table:  
+        for bucket in self.users.table.values():
             print("Debug: Current bucket:", bucket)  # Debug statement
-            
-            if bucket:  # Check if the bucket is not empty
-                for key, user_data in bucket:  # Iterate through key-value pairs
+            if bucket:  # Ensure the bucket is not empty
+                for key, user_data in bucket:
                     print("Debug: Checking user_data:", user_data)  # Debug statement
-                    
-                    # Validate user by email and password
                     if isinstance(user_data, dict) and user_data.get('email') == email and user_data.get('password') == password:
-                        session_id = str(uuid.uuid4())  # Generate session ID
+                        session_id = str(uuid.uuid4())  # Generate a session ID
                         self.active_sessions.insert(session_id, user_data['id'])  # Map session ID to user ID
-                        return True, session_id  # Successful login
-            
+                        return True, session_id  # Return the session ID
         print("Active Sessions:", self.active_sessions.table)
-        return False, "Invalid credentials"  # If no match is found
-
-
+        return False, "Invalid credentials"
    
     '''def get_user_by_id(self, user_id):
         # Check if the provided user_id is a session ID

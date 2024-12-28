@@ -23,13 +23,12 @@ from map_visualization import visualize_map
 def initialize_system():
     """Initialize all system components in the correct order"""
     # Initialize base services first
-    
-    islamabad_map = IslamabadMap()
-    location_service = LocationService(islamabad_map)
+    map_data = IslamabadMap()
+    location_service = LocationService(map_data)
     pricing = Pricing()
     
     # Initialize management systems
-    user_mgmt = UserManagement(islamabad_map)
+    user_mgmt = UserManagement()
     driver_mgmt = DriverManagement()
     friend_mgmt = FriendManagement(user_mgmt)
     ride_history = RideHistory()
@@ -47,7 +46,7 @@ def initialize_system():
     social_rideshare = SocialRideshare()
     
     # Initialize dashboard last as it depends on all other components
-    dashboards = Dashboards(user_mgmt, driver_mgmt, ride_request, location_service, pricing, ride_history, emergency_handler, friend_mgmt, islamabad_map)
+    dashboards = Dashboards(user_mgmt, driver_mgmt, ride_request, location_service, pricing, ride_history, emergency_handler, friend_mgmt)
     
     return {
         'user_mgmt': user_mgmt,

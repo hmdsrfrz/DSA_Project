@@ -10,20 +10,8 @@
         "rating": 0.0,
         "total_ratings": 0,
         "current_location": "F-10 Markaz",
-        "active_ride": "bcd26431-5752-443b-a7ef-32b7dea91635",
-        "ride_history": [
-            {
-                "id": "89ac7e5c-fd81-410f-823e-22bdbf7be000",
-                "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
-                "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
-                "pickup_location": "F-7 Markaz",
-                "dropoff_location": "F-17",
-                "status": "completed",
-                "start_time": 1735354739.2832816,
-                "end_time": 1735357396.724996,
-                "duration": 2657.441714525223
-            }
-        ],
+        "active_ride": "89ac7e5c-fd81-410f-823e-22bdbf7be000",
+        "ride_history": [],
         "availability": true
     }
 }

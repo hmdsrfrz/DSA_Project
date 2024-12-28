@@ -1,29 +1,36 @@
-import json
 import os
-import threading
-from data_structures import DoublyLinkedList, HashTable
+import json
 
 
-
-# Custom encoder to handle non-serializable objects
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
-        if hasattr(obj, 'to_dict'):
-            return obj.to_dict()  # Convert objects with 'to_dict()' method
-        if hasattr(obj, 'to_list'):
-            return obj.to_list()  # Convert LinkedList to list
-        return super().default(obj)  # Fallback for unsupported objects
+        # Add custom serialization logic if needed
+        return super().default(obj)
 
-# Universal save function
 def save_data_to_file(data, filename):
+    """
+    Saves data to a JSON file, handling specific data structure conversions.
+
+    Args:
+        data: The data to save (e.g., Queue, HashTable, Graph).
+        filename: The name of the file to save the data to.
+
+    Returns:
+        True if successful, False otherwise.
+    """
+    from data_structures import DoublyLinkedList, HashTable, Queue, PriorityQueue, Graph
     try:
+        # Convert specific data structures to serializable formats
         if isinstance(data, Queue):
             data = list(data.queue)  # Convert Queue to list
         elif isinstance(data, PriorityQueue):
             data = [(priority, item) for priority, item in data.items()]
         elif isinstance(data, HashTable):
             data = data.to_dict()
+        elif isinstance(data, Graph):
+            data = data.to_dict()  # Convert Graph to a dictionary
 
+        # Save to JSON
         with open(filename, 'w') as f:
             json.dump(data, f, indent=4, cls=CustomJSONEncoder)
         return True
@@ -31,9 +38,18 @@ def save_data_to_file(data, filename):
         print(f"Error saving to {filename}: {e}")
         return False
 
-
-# Universal load function with data type handling
 def load_data_from_file(filename, data_type=dict):
+    """
+    Loads data from a JSON file, converting it to the specified data type.
+
+    Args:
+        filename: The name of the file to load data from.
+        data_type: The expected type of the data (e.g., HashTable, Graph).
+
+    Returns:
+        An instance of the specified data_type or an empty instance if loading fails.
+    """
+    from data_structures import DoublyLinkedList, HashTable, Queue, PriorityQueue, Graph
     try:
         if not isinstance(filename, str):
             raise TypeError("Filename must be a string.")
@@ -53,13 +69,20 @@ def load_data_from_file(filename, data_type=dict):
             else:
                 print(f"Warning: Data from {filename} is not a dict. Initializing empty HashTable.")
                 return HashTable()
-        
+
         elif data_type == DoublyLinkedList:
             if isinstance(data, list):
                 return DoublyLinkedList.from_list(data)
             else:
                 print(f"Warning: Data from {filename} is not a list. Initializing empty DoublyLinkedList.")
                 return DoublyLinkedList()
+
+        elif data_type == Graph:
+            if isinstance(data, dict):
+                return Graph.from_dict(data)  # Convert dictionary back to Graph
+            else:
+                print(f"Warning: Data from {filename} is not a dict. Initializing empty Graph.")
+                return Graph()
 
         return data  # Fallback for general dict/list cases
 

@@ -414,7 +414,6 @@ def visualize_map(self, highlight_path=None):
     plt.show()
 
 
-
 '''def visualize_ride_path(self, start, end):
     """
     Visualize the shortest path between two locations on the map.

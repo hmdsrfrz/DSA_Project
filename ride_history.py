@@ -1,4 +1,4 @@
-from data_structures import DoublyLinkedList, HashTable
+from data_structures import DoublyLinkedList
 from save_load import save_data_to_file, load_data_from_file
 
 class RideHistory:

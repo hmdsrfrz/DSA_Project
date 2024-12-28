@@ -1,5 +1,4 @@
-from save_load  import save_data_to_file, load_data_from_file
-
+from save_load import save_data_to_file, load_data_from_file
 class RatingSystem:
     def __init__(self, driver_management):
         self.driver_mgmt = driver_management

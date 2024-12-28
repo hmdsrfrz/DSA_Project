@@ -1,5 +1,6 @@
 #data_structures.py
 import json
+from save_load import save_data_to_file, load_data_from_file
 
 class MinHeap:
     def __init__(self):
@@ -206,6 +207,23 @@ class DoublyLinkedList:
         self.head = None
         self.tail = None
 
+    def to_list(self):
+        """Convert the linked list into a list."""
+        result = []
+        current = self.head
+        while current:
+            result.append(current.data)  # Assuming each node has a 'data' attribute
+            current = current.next
+        return result
+
+    @classmethod
+    def from_list(cls, data_list):
+        """Reconstruct the linked list from a list."""
+        new_list = cls()
+        for item in data_list:
+            new_list.append(item)  # Assuming an `append` method exists
+        return new_list
+
     def append(self, data):
         new_node = self.Node(data)
         if not self.head:
@@ -228,40 +246,25 @@ class DoublyLinkedList:
             current = current.prev
 
     def to_list(self):
-        """Convert linked list to Python list"""
+        """
+        Converts the DoublyLinkedList into a standard Python list.
+        """
         result = []
         current = self.head
         while current:
-            # Handle nested objects that might have to_dict or to_list methods
-            if hasattr(current.data, 'to_dict'):
-                result.append(current.data.to_dict())
-            elif hasattr(current.data, 'to_list'):
-                result.append(current.data.to_list())
-            else:
-                result.append(current.data)
+            result.append(current.data)  # Assuming each node has a 'data' attribute
             current = current.next
         return result
 
-    def to_dict(self):
-        """Convert to dictionary for JSON serialization compatibility"""
-        return {'data': self.to_list()}
-
     @classmethod
     def from_list(cls, data_list):
-        """Create linked list from Python list"""
-        ll = cls()
+        """
+        Creates a DoublyLinkedList from a standard Python list.
+        """
+        new_list = cls()
         for item in data_list:
-            # Handle dictionary input for nested objects
-            if isinstance(item, dict):
-                if 'data' in item and isinstance(item['data'], list):
-                    # Handle nested LinkedList
-                    ll.append(cls.from_list(item['data']))
-                else:
-                    # Handle nested HashTable
-                    ll.append(HashTable.from_dict(item))
-            else:
-                ll.append(item)
-        return ll
+            new_list.append(item)  # Assuming an `append` method exists
+        return new_list
     
     def delete(self, data):
         current = self.head
@@ -275,95 +278,87 @@ class DoublyLinkedList:
                     self.head = current.next
                 if current == self.tail:
                     self.tail = current.prev
-                return True
-        return False
-
-    def __str__(self):
-        """String representation for debugging"""
-        return f"DoublyLinkedList({self.to_list()})"
-
-    def __eq__(self, other):
-        """Enable equality comparison"""
-        if not isinstance(other, DoublyLinkedList):
-            return False
-        return self.to_list() == other.to_list()
-    
-class HashTable:
-    def __init__(self, size=10):
-        self.size = size
-        self.table = [[] for _ in range(size)]  # List of lists for chaining
-
-    def _hash(self, key):
-        """Compute the hash index for a key."""
-        return hash(key) % self.size
-
-    def insert(self, key, value):
-        """Insert or update a key-value pair."""
-        index = self._hash(key)
-        for i, (k, v) in enumerate(self.table[index]):
-            if k == key:
-                self.table[index][i] = (key, value)  # Update existing key
                 return
-        self.table[index].append((key, value))  # Add new key-value pair
+            current = current.next
 
-    def get(self, key):
-        """Retrieve value by key."""
-        index = self._hash(key)
-        for k, v in self.table[index]:
-            if k == key:
-                return v
-        return None
+class HashTable:
+    def __init__(self, size=10):  # Initialize with a default size
+        self.table = {}  # Use a dictionary to store key-value pairs
 
-    def delete(self, key):
-        """Delete a key-value pair."""
-        index = self._hash(key)
-        for i, (k, v) in enumerate(self.table[index]):
-            if k == key:
-                del self.table[index][i]
-                return True
-        return False
+    def hash_function(self, key):
+        # Simple hash function (you can implement more sophisticated ones)
+        hash_value = hash(key) % len(self.table) if self.table else 0
+        return hash_value
+    
+    def save_to_file(self, filename):
+        save_data_to_file(self.to_dict(), filename)
 
-    def values(self):
-        """Return all values (dictionary-like)."""
-        return [v for bucket in self.table for k, v in bucket]
-
-    def items(self):
-        """Return all key-value pairs."""
-        return [(k, v) for bucket in self.table for k, v in bucket]
+    def load_from_file(self, filename):
+        loaded_data = load_data_from_file(filename, dict)
+        if loaded_data:
+            self.table = loaded_data
 
     def to_dict(self):
-        """Convert to a dictionary for JSON serialization."""
+        """
+        Converts the HashTable into a standard Python dictionary.
+        Handles special serialization for nested DoublyLinkedList objects.
+        """
         result = {}
-        for bucket in self.table:
-            for key, value in bucket:
-                # Handle nested objects that might have to_dict method
-                if hasattr(value, 'to_dict'):
-                    result[str(key)] = value.to_dict()
-                # Handle nested objects that might have to_list method
-                elif hasattr(value, 'to_list'):
-                    result[str(key)] = value.to_list()
-                else:
-                    result[str(key)] = value
+        for bucket in self.table.values():
+            if bucket:
+                for key, value in bucket:
+                    # Convert DoublyLinkedList to list if present
+                    if isinstance(value, dict) and 'ride_history' in value:
+                        value = value.copy()  # Avoid modifying the original value
+                        value['ride_history'] = value['ride_history'].to_list()
+                    result[key] = value
         return result
 
     @classmethod
     def from_dict(cls, data_dict):
-        """Create HashTable from dictionary"""
-        ht = cls()
-        # Clear the initial empty buckets
-        ht.table = [[] for _ in range(ht.size)]
-        # Insert each key-value pair using the existing insert method
+        """
+        Creates a HashTable from a standard Python dictionary.
+        Handles special deserialization for nested DoublyLinkedList objects.
+        """
+        new_table = cls()
         for key, value in data_dict.items():
-            ht.insert(key, value)
-        return ht
+            # Deserialize DoublyLinkedList if present
+            if isinstance(value, dict) and 'ride_history' in value:
+                value = value.copy()
+                value['ride_history'] = DoublyLinkedList.from_list(value['ride_history'])
+            new_table.insert(key, value)
+        return new_table
 
-    def buckets(self):
-        """Return raw table structure for iteration."""
-        return self.table
+    def insert(self, key, value):
+        index = self.hash_function(key)
+        if index not in self.table:
+            self.table[index] = []
+        self.table[index].append((key, value))  # Handle collisions by storing in list
 
-    
+    def get(self, key):
+        index = self.hash_function(key)
+        if index in self.table:
+            for k, v in self.table[index]:
+                if k == key:
+                    return v
+        return None
 
-    
+    def delete(self, key):
+        index = self.hash_function(key)
+        if index in self.table:
+            for i, (k, v) in enumerate(self.table[index]):
+                if k == key:
+                    del self.table[index][i]
+                    break
+
+    def values(self):
+        # Flatten the table and return all values
+        return [value for bucket in self.table.values() for key, value in bucket]
+
+    def items(self):
+        # Flatten the table and return all key-value pairs
+        return [(key, value) for bucket in self.table.values() for key, value in bucket]
+
 class Queue:
     def __init__(self):
         self.queue = []

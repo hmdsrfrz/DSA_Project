@@ -6,7 +6,7 @@ import time
 class DriverManagement:
     def __init__(self):
         # Load drivers from file or initialize an empty HashTable
-        self.drivers = load_data_from_file('drivers_data.json', HashTable) or HashTable()
+        self.drivers = load_data_from_file('drivers_data.json', HashTable)
         self.active_drivers = HashTable()  # Currently available drivers
 
     def register_driver(self, name, email, phone, password, vehicle_type, license_number):
@@ -36,7 +36,7 @@ class DriverManagement:
 
     def login_driver(self, email, password):
         print("Debug: Drivers table contents:", self.drivers.table)  # Debug statement
-        for bucket in self.drivers.table:  # Iterate over each bucket
+        for bucket in self.drivers.table.values():
             print("Debug: Current bucket:", bucket)  # Debug statement
             if bucket:  # Ensure the bucket is not empty
                 for driver_id, driver_data in bucket:  # Iterate through the list of key-value pairs
@@ -44,7 +44,6 @@ class DriverManagement:
                     if isinstance(driver_data, dict) and driver_data.get('email') == email and driver_data.get('password') == password:
                         return True, driver_id
         return False, "Invalid credentials"
-
     
     def update_driver(self, driver):
         # Logic to save the updated driver data back to the data store
@@ -130,21 +129,26 @@ class DriverManagement:
         except ValueError:
             print("Invalid input. Please enter a valid number.")'''
     
-
     def view_ride_requests(self, driver_id):
         # Load raw data from JSON file
         ride_requests_raw = load_data_from_file('normal_requests.json', dict)
         print(f"Debug: Raw ride requests loaded:\n{ride_requests_raw}")
 
-        # Check if the raw data contains the 'queue' key
-        if not ride_requests_raw or 'queue' not in ride_requests_raw:
+        # Check if the raw data is a list or a dictionary
+        if isinstance(ride_requests_raw, list):
+            # If it's a list, we can directly use it
+            requests_list = ride_requests_raw
+        elif isinstance(ride_requests_raw, dict) and 'queue' in ride_requests_raw:
+            # If it's a dictionary, extract the queue
+            requests_list = ride_requests_raw['queue']
+        else:
             print("No ride requests available.")
             return
 
         # Extract the queue and convert to PriorityQueue
         try:
             ride_requests = PriorityQueue()
-            for request in ride_requests_raw['queue']:
+            for request in requests_list:
                 # Add requests to the priority queue with their distance or priority
                 priority = request.get('priority', 2)  # Default to priority 2 if missing
                 ride_requests.push(priority, request)
@@ -163,10 +167,10 @@ class DriverManagement:
         for idx, (_, request) in enumerate(requests_list, start=1):
             # Use .get() to avoid KeyError
             print(f"{idx}. Priority: {request.get('priority', 'N/A')}, "
-                  f"Pickup: {request.get('pickup_location', 'N/A')}, "
-                  f"Dropoff: {request.get('dropoff_location', 'N/A')}, "
-                  f"User  ID: {request.get('user_id', 'N/A')}")
-
+                f"Pickup: {request.get('pickup_location', 'N/A')}, "
+                f"Dropoff: {request.get('dropoff_location', 'N/A')}, "
+                f"User  ID: {request.get('user_id', 'N/A')}")
+        
         try:
             # Prompt driver to select a ride
             choice = int(input("Enter the number of the ride to accept: ")) - 1
@@ -184,9 +188,8 @@ class DriverManagement:
 
                 # Move the selected request to active rides
                 active_rides = load_data_from_file('active_rides.json', dict) or {}
-                ride_id = selected_request.get("id")  # Get the ride ID from the selected request
                 active_ride = {
-                    "id": ride_id,
+                    "id": selected_request.get("id"),
                     "user_id": selected_request.get("user_id"),
                     "driver_id": driver_id,
                     "pickup_location": selected_request.get("pickup_location"),
@@ -194,19 +197,19 @@ class DriverManagement:
                     "status": "ongoing",
                     "start_time": time.time()
                 }
-                active_rides[ride_id] = active_ride  # Use ride_id as the key
-                save_data_to_file(active_rides, 'active_rides.json')  # Save the updated active rides
+                active_rides[selected_request.get("id")] = active_ride
+                save_data_to_file(active_rides, 'active_rides.json')
 
-                print(f"Debug: Added ride to active rides:\n{active_ride}")
                 print("Ride accepted successfully!")
             else:
                 print("Invalid selection. Please choose a valid ride number.")
         except ValueError:
             print("Invalid input. Please enter a valid number.")
 
+
     def sync_active_rides_with_drivers(self, driver_id):
-        # Load active rides as a dictionary
-        active_rides = load_data_from_file('active_rides.json', dict) or {}
+        # Load active rides as a list
+        active_rides = load_data_from_file('active_rides.json', list) or []
         print(f"Debug: Loaded active rides: {active_rides}")
 
         # Load drivers data as a dictionary
@@ -215,7 +218,7 @@ class DriverManagement:
 
         # Create a mapping of driver IDs to their active rides
         driver_to_active_ride = {}
-        for ride_id, ride in active_rides.items():  # Iterate over the dictionary
+        for ride in active_rides:  # Iterate over the list
             driver_to_active_ride[ride['driver_id']] = ride['id']
 
         print(f"Debug: Driver to active ride mapping: {driver_to_active_ride}")
