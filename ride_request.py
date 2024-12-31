@@ -4,6 +4,7 @@ from rating_system import RatingSystem
 import map_visualization
 import time
 import uuid
+from datetime import datetime
 
 class RideRequest:
     def __init__(self, user_management, driver_management, location_service, pricing):  # Added missing dependencies
@@ -62,7 +63,7 @@ class RideRequest:
             'pickup_location': pickup_location,
             'dropoff_location': dropoff_location,
             'status': 'pending',
-            'timestamp': time.time(),
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'distance': distance,
             'price': price,
             'priority': 1 if is_emergency else 2,
@@ -89,34 +90,10 @@ class RideRequest:
             print(f"Error during visualization: {e}")
         return True, request
 
-
-
-
-
     def _sync_driver_requests(self):
         """Sync ride requests to driver viewable file (ride_requests.json)."""
         save_data_to_file(self.normal_requests, 'ride_requests.json')
 
-
-    '''def process_ride_requests(self):
-        # Process emergency requests first
-        while not self.emergency_requests.is_empty():
-            request = self.emergency_requests.pop()
-            save_data_to_file(self.emergency_requests, 'emergency_requests.json')
-            driver = self._find_nearest_driver(request['pickup_location'])
-            if driver:
-                self._assign_ride(request, driver['id'])
-
-        # Process normal requests
-        while not self.normal_requests.is_empty():
-            request = self.normal_requests.dequeue()
-            save_data_to_file(self.normal_requests, 'normal_requests.json')
-            driver = self._find_nearest_driver(request['pickup_location'])
-            if driver:
-                self._assign_ride(request, driver['id'])
-            else:
-                self.normal_requests.enqueue(request)
-                save_data_to_file(self.normal_requests, 'normal_requests.json')'''
     
     def process_ride_requests(self):
         # Load ride requests from JSON
@@ -169,49 +146,118 @@ class RideRequest:
         self.driver_mgmt.set_driver_availability(driver_id, False)
 
         return ride_id
-
-
-    def complete_ride(self, ride_id):
-        ride_data = self.active_rides.get(ride_id)
-        if not ride_data:
-            return False, "Ride not found"
-
-        ride_data['status'] = 'completed'
-        ride_data['end_time'] = time.time()
-        ride_data['duration'] = ride_data['end_time'] - ride_data['start_time']
-
-        user_id = ride_data['request']['user_id']
-        driver_id = ride_data['driver_id']
-
-        user = self.user_mgmt.get_user_by_id(user_id)
-        driver = self.driver_mgmt.get_driver_by_id(driver_id)
-
-        if user and driver:
-            user['ride_history'].append(ride_data)
-            driver['ride_history'].append(ride_data)
-
-            user['active_ride'] = None
-            driver['active_ride'] = None
-            self.driver_mgmt.set_driver_availability(driver_id, True)
-
-            self.active_rides.delete(ride_id)
-            save_data_to_file(self.active_rides, 'active_rides.json')
-
-            # Prompt for post-ride feedback
-            print("\n--- Post-Ride Feedback ---")
-            print(f"Ride ID: {ride_id}")
-            print(f"Driver: {driver['name']} ({driver['vehicle_type']})")
-            try:
-                rating = float(input("Rate the driver (1-5): "))
-                feedback = input("Leave any additional feedback (optional): ")
-                success, message = RatingSystem.post_ride_feedback(driver_id, ride_id, rating, feedback)
-                print(message)
-            except ValueError:
-                print("Invalid rating. Feedback skipped.")
-
-            return True, "Ride completed successfully"
-        return False, "Error updating user or driver profiles"
     
+    def complete_ride(self, driver_id):
+        print(f"Debug: Starting complete_ride for driver_id: {driver_id}")
+        
+        # Load data from files
+        active_rides = load_data_from_file('active_rides.json', list) or []
+        ride_history = load_data_from_file('ride_history.json', list) or []
+        user_data = load_data_from_file('users_data.json', dict) or {}
+        driver_data = load_data_from_file('drivers_data.json', dict) or {}
+
+        # Find rides associated with the driver
+        matching_rides = [
+            ride for ride in active_rides
+            if ride.get('driver_id') == driver_id
+        ]
+        
+        if not matching_rides:
+            print(f"Debug: No active rides found for driver_id: {driver_id}")
+            print(f"Debug: Active rides list: {active_rides}")
+            return False, "No active ride found for this driver."
+
+        # Sort rides by timestamp to get the most recent one
+        most_recent_ride = sorted(
+            matching_rides,
+            key=lambda x: x.get('timestamp', 0),
+            reverse=True
+        )[0]
+
+        # Extract ride data
+        ride_data = most_recent_ride
+
+        # Ensure rating and feedback exist, initialize to None if not present
+        if 'rating' not in ride_data:
+            ride_data['rating'] = None
+        if 'feedback' not in ride_data:
+            ride_data['feedback'] = None
+
+        # Handle duration calculation more robustly
+        start_time = ride_data.get('start_time', time.time())
+        end_time = time.time()
+
+        # Update ride data
+        ride_data['status'] = 'completed'
+        ride_data['end_time'] = end_time
+        ride_data['duration'] = end_time - start_time
+
+        # Check if it's a merged ride
+        if "merged_id" in ride_data:
+            # Handle merged ride
+            for request in ride_data.get('requests', []):
+                user_id = request['user_id']
+                if user_id in user_data:
+                    user = user_data[user_id]
+                    user_ride_entry = {
+                        **ride_data,
+                        'user_details': {
+                            'name': user.get('name'),
+                            'email': user.get('email'),
+                            'phone': user.get('phone'),
+                        },
+                    }
+                    user['ride_history'].append(user_ride_entry)
+                    if user.get('active_ride') == ride_data.get('id'):
+                        user['active_ride'] = None
+            
+            # Update driver history and availability
+            driver = driver_data.get(driver_id)
+            if driver:
+                driver['ride_history'].append(ride_data)
+                if driver.get('active_ride') == ride_data.get('id'):
+                    driver['active_ride'] = None
+                self.driver_mgmt.set_driver_availability(driver_id, True)
+
+        else:
+            # Handle individual ride
+            user_id = ride_data.get('user_id')
+            if user_id in user_data:
+                user = user_data[user_id]
+                user_ride_entry = {
+                    **ride_data,
+                    'user_details': {
+                        'name': user.get('name'),
+                        'email': user.get('email'),
+                        'phone': user.get('phone'),
+                    },
+                }
+                user['ride_history'].append(user_ride_entry)
+                if user.get('active_ride') == ride_data.get('id'):
+                    user['active_ride'] = None
+            
+            # Update driver history and availability
+            driver = driver_data.get(driver_id)
+            if driver:
+                driver['ride_history'].append(ride_data)
+                if driver.get('active_ride') == ride_data.get('id'):
+                    driver['active_ride'] = None
+                self.driver_mgmt.set_driver_availability(driver_id, True)
+
+        # Add ride to ride history
+        ride_history.append(ride_data)
+
+        # Remove the ride from active rides
+        active_rides.remove(ride_data)
+
+        # Save updates
+        save_data_to_file(active_rides, 'active_rides.json')
+        save_data_to_file(ride_history, 'ride_history.json')
+        save_data_to_file(user_data, 'users_data.json')
+        save_data_to_file(driver_data, 'drivers_data.json')
+
+        return True, "Ride completed successfully"
+
     def _find_nearest_driver(self, pickup_location):
         available_drivers = self.driver_mgmt.get_available_drivers()
         nearest_driver = None
@@ -304,7 +350,9 @@ class RideRequest:
         print(f"Debug: Retrieved driver before update: {driver}")  # Debug print
         if driver:
             driver['active_ride'] = ride_id  # Set the active ride ID
-            self.driver_mgmt.update_driver(driver)  # Ensure you have a method to update the driver in your data store
+            self.driver_mgmt.update_driver(driver)
+            self.driver_mgmt._sync_driver_requests(driver_id)
+              # Ensure you have a method to update the driver in your data store
             print(f"Debug: Updated driver after accepting ride: {driver}")  # Debug print
         else:
             print("Error: Driver not found.")
@@ -316,3 +364,87 @@ class RideRequest:
 
     def _calculate_fare(self, distance):
         return self.pricing.calculate_fare(distance)
+
+
+
+    '''def complete_ride(self, driver_id):
+        print(f"Debug: Starting complete_ride for driver_id: {driver_id}")
+        
+        # Load active rides as a list
+        active_rides = load_data_from_file('active_rides.json', list) or []
+        ride_history = load_data_from_file('ride_history.json', list) or []
+       
+        # Find the most recent ride associated with the driver
+        matching_rides = [
+            (index, ride) for index, ride in enumerate(active_rides)
+            if ride.get('driver_id') == driver_id
+        ]
+        
+        if not matching_rides:
+            return False, "No active ride found for this driver."
+            
+        # Sort by start_time in descending order and get the most recent
+        most_recent_ride = sorted(
+            matching_rides,
+            key=lambda x: x[1].get('start_time', 0),
+            reverse=True
+        )[0]
+        ride_index, ride_data = most_recent_ride
+       
+        # Update ride data
+        ride_data['status'] = 'completed'
+        ride_data['end_time'] = time.time()
+        ride_data['duration'] = ride_data['end_time'] - ride_data['start_time']
+       
+        user_id = ride_data.get('user_id')
+        user = self.user_mgmt.get_user_by_id(user_id)
+        driver = self.driver_mgmt.get_driver_by_id(driver_id)
+       
+        if user and driver:
+            # Update histories and clear active rides
+            user['ride_history'].append(ride_data)
+            driver['ride_history'].append(ride_data)
+            
+            ride_history_entry = {
+                **ride_data,
+                'user_details': {
+                    'name': user.get('name'),
+                    'email': user.get('email'),
+                    'phone': user.get('phone')
+                },
+                'driver_details': {
+                    'name': driver.get('name'),
+                    'email': driver.get('email'),
+                    'phone': driver.get('phone'),
+                    'vehicle_type': driver.get('vehicle_type'),
+                    'license_number': driver.get('license_number')
+                }
+            }
+           
+            ride_history.append(ride_history_entry)
+            
+            if user.get('active_ride') == ride_data.get('ride_id'):
+                user['active_ride'] = None
+            if driver.get('active_ride') == ride_data.get('ride_id'):
+                driver['active_ride'] = None
+           
+            # Check for remaining active rides
+            remaining_active_rides = any(
+                ride.get('driver_id') == driver_id 
+                for i, ride in enumerate(active_rides) 
+                if i != ride_index
+            )
+            
+            if not remaining_active_rides:
+                self.driver_mgmt.set_driver_availability(driver_id, True)
+           
+            active_rides.pop(ride_index)
+               
+            # Save updates
+            save_data_to_file(active_rides, 'active_rides.json')
+            save_data_to_file(ride_history, 'ride_history.json')
+           
+            return True, "Ride completed successfully"
+           
+        return False, "Error updating user or driver profiles"
+'''    

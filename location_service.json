@@ -1,3 +1,148 @@
 {
-    "nodes": {}
+    "nodes": {
+        "F-6 Markaz": {
+            "F-7 Markaz": 3,
+            "Serena Hotel": 2,
+            "Shakarparian": 5,
+            "G-6": 2
+        },
+        "F-7 Markaz": {
+            "F-6 Markaz": 3,
+            "F-10 Markaz": 4,
+            "FAST University": 3,
+            "Centaurus Mall": 2,
+            "Pakistan Monument": 4,
+            "Fire Station F-7": 1
+        },
+        "G-9 Markaz": {
+            "G-10": 2,
+            "I-8 Markaz": 5,
+            "COMSATS": 6,
+            "G-6": 4,
+            "PIMS Hospital": 2,
+            "Fire Station G-9": 1,
+            "Fire Station I-8": 5
+        },
+        "I-8 Markaz": {
+            "G-9 Markaz": 5,
+            "Shifa Hospital": 6,
+            "Fire Station I-8": 1
+        },
+        "E-11 Markaz": {
+            "E-11": 1
+        },
+        "F-10 Markaz": {
+            "F-7 Markaz": 4,
+            "F-11": 2,
+            "Air University": 4,
+            "G-10": 2
+        },
+        "G-11 Markaz": {
+            "G-10": 3,
+            "NUST": 4,
+            "Shifa Hospital": 2
+        },
+        "F-17": {
+            "Air University": 4
+        },
+        "E-11": {
+            "E-11 Markaz": 1,
+            "IIUI": 8,
+            "F-11": 5,
+            "D-12": 3
+        },
+        "G-10": {
+            "G-9 Markaz": 2,
+            "G-11 Markaz": 3,
+            "Faisal Mosque": 3,
+            "F-10 Markaz": 2,
+            "PIMS Hospital": 2,
+            "Fire Station G-9": 2
+        },
+        "D-12": {
+            "E-11": 3
+        },
+        "F-11": {
+            "F-10 Markaz": 2,
+            "Daman-e-Koh": 4,
+            "E-11": 5
+        },
+        "G-6": {
+            "F-6 Markaz": 2,
+            "G-9 Markaz": 4,
+            "Fire Station G-9": 2
+        },
+        "IIUI": {
+            "E-11": 8
+        },
+        "Air University": {
+            "F-10 Markaz": 4,
+            "F-17": 4,
+            "Ali Medical Center": 2
+        },
+        "FAST University": {
+            "F-7 Markaz": 3,
+            "Ali Medical Center": 2
+        },
+        "COMSATS": {
+            "G-9 Markaz": 6,
+            "Ali Medical Center": 3
+        },
+        "NUST": {
+            "G-11 Markaz": 4,
+            "Shifa Hospital": 3
+        },
+        "Faisal Mosque": {
+            "G-10": 3,
+            "PIMS Hospital": 3
+        },
+        "Shakarparian": {
+            "F-6 Markaz": 5
+        },
+        "Pakistan Monument": {
+            "F-7 Markaz": 4,
+            "Fire Station F-7": 3
+        },
+        "Daman-e-Koh": {
+            "F-11": 4
+        },
+        "Centaurus Mall": {
+            "F-7 Markaz": 2,
+            "Fire Station F-7": 2
+        },
+        "Serena Hotel": {
+            "F-6 Markaz": 2
+        },
+        "PIMS Hospital": {
+            "G-9 Markaz": 2,
+            "G-10": 2,
+            "Faisal Mosque": 3
+        },
+        "Shifa Hospital": {
+            "NUST": 3,
+            "G-11 Markaz": 2,
+            "I-8 Markaz": 6,
+            "Fire Station I-8": 2
+        },
+        "Ali Medical Center": {
+            "FAST University": 2,
+            "Air University": 2,
+            "COMSATS": 3
+        },
+        "Fire Station F-7": {
+            "F-7 Markaz": 1,
+            "Centaurus Mall": 2,
+            "Pakistan Monument": 3
+        },
+        "Fire Station G-9": {
+            "G-9 Markaz": 1,
+            "G-10": 2,
+            "G-6": 2
+        },
+        "Fire Station I-8": {
+            "I-8 Markaz": 1,
+            "Shifa Hospital": 2,
+            "G-9 Markaz": 5
+        }
+    }
 }

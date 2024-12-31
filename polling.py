@@ -51,7 +51,7 @@ def reload_users(filename):
     Reloads the user data from the specified file and updates the user management system.
     """
     try:
-        user_mgmt.users.load_data_from_file(filename)
+        load_data_from_file(user_mgmt.users, filename)
         print(f"User data reloaded from {filename}")
     except FileNotFoundError:
         print(f"Error: {filename} not found.")

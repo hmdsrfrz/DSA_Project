@@ -20,23 +20,30 @@ def save_data_to_file(data, filename):
     """
     from data_structures import DoublyLinkedList, HashTable, Queue, PriorityQueue, Graph
     try:
-        # Convert specific data structures to serializable formats
-        if isinstance(data, Queue):
-            data = list(data.queue)  # Convert Queue to list
-        elif isinstance(data, PriorityQueue):
-            data = [(priority, item) for priority, item in data.items()]
-        elif isinstance(data, HashTable):
-            data = data.to_dict()
-        elif isinstance(data, Graph):
-            data = data.to_dict()  # Convert Graph to a dictionary
 
-        # Save to JSON
-        with open(filename, 'w') as f:
-            json.dump(data, f, indent=4, cls=CustomJSONEncoder)
-        return True
+            # Convert specific data structures to serializable formats
+            if isinstance(data, Queue):
+                serializable_data = list(data.queue)
+            elif isinstance(data, PriorityQueue):
+                serializable_data = [(priority, item) for priority, item in data.items()]
+            elif isinstance(data, HashTable):
+                serializable_data = data.to_dict()
+            elif isinstance(data, Graph):
+                serializable_data = data.to_dict()
+            elif isinstance(data, list):
+                serializable_data = list(data)  # Create a copy of the list
+            elif isinstance(data, dict):
+                serializable_data = dict(data)  # Create a copy of the dict
+            else:
+                serializable_data = data
+
+            # Save to JSON
+            with open(filename, 'w') as f:
+                json.dump(serializable_data, f, indent=4, cls=CustomJSONEncoder)
+            return True
     except Exception as e:
-        print(f"Error saving to {filename}: {e}")
-        return False
+            print(f"Error saving to {filename}: {e}")
+            return False
 
 def load_data_from_file(filename, data_type=dict):
     """

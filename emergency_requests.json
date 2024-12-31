@@ -1,14 +1,10 @@
 {
-    "heap": [
-        [
-            1,
-            {
-                "id": "98850ea4-9dac-4763-a10f-bcef7d9e8b25",
-                "user_id": "ff8a70c6-231d-4b4b-b7e6-de7ac32e1ddc",
-                "pickup_location": "F-7 Markaz",
-                "dropoff_location": "E-11 Markaz",
-                "timestamp": 1735067698.969422
-            }
-        ]
-    ]
+    "cfeeb1d4-5261-46eb-b99f-4e06009f9a94": {
+        "id": "cfeeb1d4-5261-46eb-b99f-4e06009f9a94",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "pickup_location": "E-11 Markaz",
+        "dropoff_location": "Fire Station G-9",
+        "timestamp": "2025-01-01 03:00:42",
+        "emergency_type": "fire station"
+    }
 }

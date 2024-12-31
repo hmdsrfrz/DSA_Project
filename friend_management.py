@@ -74,25 +74,6 @@ class FriendManagement:
         return True, "Friend request sent successfully"
 
 
-    '''def get_pending_requests(self, user_id):
-        """Get list of pending friend requests for a user."""
-        pending_users = []
-        print(f"Debug: Friend Requests Table: {self.friend_requests.to_dict()}")  # Debug statement
-        print(f"Debug: Current User ID: {user_id}")  # Debug current user ID
-
-        for bucket in self.friend_requests.table.values():
-            if bucket:
-                for to_user_id, from_user_list in bucket:
-                    # Reverse lookup: Check if current user sent a request to this recipient
-                    if user_id in from_user_list:
-                        print(f"Debug: Match found for request sent by {user_id} to {to_user_id}")  # Confirm match
-                        user_data = self.user_mgmt.get_user_by_id(to_user_id)
-                        if user_data:
-                            pending_users.append((to_user_id, user_data))
-        
-        return pending_users
-        #this function used to show you the requests that you have sent to other users
-        # say you logged in as hh, it shows the requests you as hh sent to others. not what others sent to you'''
     
     def get_pending_requests(self, user_id):
         """Get list of pending friend requests for a user."""

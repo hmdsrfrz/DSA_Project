@@ -29,14 +29,18 @@ class LocationService:
             self.graph.add_edge(end, start, distance)
         
         return self.graph
-
+    
     def get_shortest_path(self, start, end):
+        """Delegate shortest path calculation to the graph."""
+        return self.graph.get_shortest_path(start, end)
+
+    '''def get_shortest_path(self, start, end):
         """Get the shortest path and its distance between two locations."""
         if not self.is_valid_location(start) or not self.is_valid_location(end):
             return None, "Invalid locations provided."
         
         try:
-            distances, previous_nodes = self.graph.dijkstra_with_path(start)
+            distances, previous_nodes = self.graph.get_shortest_path(start, end)
             if distances[end] == float('inf'):
                 return None, "No path exists between the specified locations."
             
@@ -49,7 +53,7 @@ class LocationService:
                 
             return path, distances[end]
         except Exception as e:
-            return None, f"Error calculating path: {str(e)}"
+            return None, f"Error calculating path: {str(e)}"'''
 
     def get_nearby_locations(self, location, max_distance):
         """Gets all locations within a specified distance from the given location."""
@@ -73,11 +77,24 @@ class LocationService:
             return None if distance == float('inf') else distance
         except Exception:
             return None
-
+        
     def is_valid_location(self, location):
         """Checks if a location exists in the map."""
-        return location in self.graph.nodes
+        print(f"Checking if location '{location}' is valid.")
+        #print(f"Current valid locations in the graph: {self.graph.nodes}")
+
+        is_valid = location in self.graph.nodes
+        if is_valid:
+            print(f"Location '{location}' is valid.")
+        else:
+            print(f"Location '{location}' is NOT valid.")
+        
+        return is_valid
 
     def save(self):
         """Save the current state of the graph."""
         save_data_to_file(self.graph, self.file_path)
+
+    '''def is_valid_location(self, location):
+            """Checks if a location exists in the map."""
+            return location in self.graph.nodes'''

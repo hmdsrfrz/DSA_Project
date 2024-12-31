@@ -1,1 +1,220 @@
-[]
+[
+    {
+        "id": "7bf0d3d0-631f-484e-ade5-a285ccc0c654",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "G-11 Markaz",
+        "status": "completed",
+        "start_time": 1735482898.9212294,
+        "end_time": 1735483350.4376993,
+        "duration": 451.51646995544434,
+        "user_details": {
+            "name": "h",
+            "email": "h",
+            "phone": "1"
+        },
+        "driver_details": {
+            "name": "h2",
+            "email": "h2",
+            "phone": "2",
+            "vehicle_type": "2",
+            "license_number": "2"
+        },
+        "rating": 5.0,
+        "feedback": "j"
+    },
+    {
+        "id": "2b08755b-0117-4703-b08e-e6ffb7ef1f0f",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "E-11 Markaz",
+        "status": "completed",
+        "start_time": 1735607725.7652593,
+        "end_time": 1735607727.9589653,
+        "duration": 2.1937060356140137,
+        "user_details": {
+            "name": "h",
+            "email": "h",
+            "phone": "1"
+        },
+        "driver_details": {
+            "name": "h2",
+            "email": "h2",
+            "phone": "2",
+            "vehicle_type": "2",
+            "license_number": "2"
+        }
+    },
+    {
+        "id": "8b389d32-b884-4961-91cb-0642b9c12b38",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "F-10 Markaz",
+        "status": "completed",
+        "start_time": 1735607126.3495934,
+        "end_time": 1735607821.6386766,
+        "duration": 695.2890832424164,
+        "user_details": {
+            "name": "h",
+            "email": "h",
+            "phone": "1"
+        },
+        "driver_details": {
+            "name": "h2",
+            "email": "h2",
+            "phone": "2",
+            "vehicle_type": "2",
+            "license_number": "2"
+        },
+        "rating": 4.0,
+        "feedback": "tt"
+    },
+    {
+        "merged_id": "merged_1735678695",
+        "requests": [
+            {
+                "request_id": "req_1735678695_bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "user_id": "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "user_name": "hh",
+                "pickup_location": "F-7 Markaz",
+                "dropoff_location": "G-11 Markaz",
+                "timestamp": 1735678695.0696857,
+                "status": "pending",
+                "matched_with": "req_1735678678_0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "is_merged": true
+            },
+            {
+                "request_id": "req_1735678678_0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "user_name": "h",
+                "pickup_location": "F-7 Markaz",
+                "dropoff_location": "G-11 Markaz",
+                "timestamp": 1735678678.798233,
+                "status": "pending",
+                "matched_with": "req_1735678695_bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "is_merged": true
+            }
+        ],
+        "status": "completed",
+        "total_fare": 55,
+        "split_fare": 27.5,
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "G-11 Markaz",
+        "timestamp": 1735678695.0703156,
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "end_time": 1735680623.4014132,
+        "duration": 1928.3310976028442
+    },
+    {
+        "merged_id": "merged_1735681334",
+        "requests": [
+            {
+                "request_id": "req_1735681334_bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "user_id": "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "user_name": "hh",
+                "pickup_location": "F-7 Markaz",
+                "dropoff_location": "G-11 Markaz",
+                "timestamp": 1735681334.7345843,
+                "status": "pending",
+                "matched_with": "req_1735681313_0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "is_merged": true
+            },
+            {
+                "request_id": "req_1735681313_0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "user_name": "h",
+                "pickup_location": "F-7 Markaz",
+                "dropoff_location": "G-11 Markaz",
+                "timestamp": 1735681313.379663,
+                "status": "pending",
+                "matched_with": "req_1735681334_bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "is_merged": true
+            }
+        ],
+        "status": "completed",
+        "total_fare": 55,
+        "split_fare": 27.5,
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "G-11 Markaz",
+        "timestamp": 1735681334.7349346,
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "end_time": 1735681355.3328164,
+        "duration": 20.59788179397583
+    },
+    {
+        "merged_id": "merged_1735683229",
+        "requests": [
+            {
+                "request_id": "req_1735683229_bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "user_id": "bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "user_name": "hh",
+                "pickup_location": "F-7 Markaz",
+                "dropoff_location": "F-10 Markaz",
+                "timestamp": 1735683229.8495321,
+                "status": "pending",
+                "matched_with": "req_1735683212_0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "is_merged": true
+            },
+            {
+                "request_id": "req_1735683212_0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+                "user_name": "h",
+                "pickup_location": "F-7 Markaz",
+                "dropoff_location": "F-10 Markaz",
+                "timestamp": 1735683212.514965,
+                "status": "pending",
+                "matched_with": "req_1735683229_bbfdbbb8-a0f6-446c-ba2b-f67a539de8d4",
+                "is_merged": true
+            }
+        ],
+        "status": "completed",
+        "total_fare": 30,
+        "split_fare": 15.0,
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "F-10 Markaz",
+        "timestamp": 1735683229.8509057,
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "end_time": 1735683241.8208373,
+        "duration": 11.969931602478027
+    },
+    {
+        "id": "fc73915e-a58f-40e6-a91f-2120570aa5a4",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "F-17",
+        "status": "completed",
+        "start_time": 1735683751.5582116,
+        "end_time": 1735684582.2045052,
+        "duration": 830.6462936401367
+    },
+    {
+        "id": "0e16edce-2201-41e4-930d-f9626fbfe368",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "F-10 Markaz",
+        "status": "completed",
+        "start_time": 1735685356.9967058,
+        "end_time": 1735685363.5544379,
+        "duration": 6.557732105255127,
+        "rating": 4.0,
+        "feedback": "acha kaam"
+    },
+    {
+        "id": "b7f0abce-03fc-423b-bf59-c1c839667b6a",
+        "user_id": "0a1ac8cd-549d-4f06-9e65-5f9f7201e0b1",
+        "driver_id": "cb6894f8-cd0d-4479-b82f-6b656bd72a9b",
+        "pickup_location": "F-7 Markaz",
+        "dropoff_location": "E-11 Markaz",
+        "status": "completed",
+        "start_time": 1735686750.177671,
+        "rating": null,
+        "feedback": null,
+        "end_time": 1735686754.3813934,
+        "duration": 4.2037224769592285
+    }
+]

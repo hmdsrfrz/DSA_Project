@@ -1,6 +1,7 @@
 import networkx as nx
 from data_structures import Graph
 from save_load import save_data_to_file, load_data_from_file
+from pricing import Pricing
 
 
 # Dictionary of locations with their coordinates (x, y)
@@ -229,36 +230,9 @@ def scale_locations(locations, factor):
 
 LOCATIONS = scale_locations(LOCATIONS, SCALING_FACTOR)
 
-'''# Plot the map
-def plot_map(locations, distances):
-    plt.figure(figsize=(12, 12))
 
-    for loc, (x, y) in locations.items():
-        # Differentiate types of locations
-        if 'Hospital' in loc:
-            plt.scatter(x, y, color='red', label='Hospital' if 'Hospital' not in plt.gca().get_legend_handles_labels()[1] else "", s=200, alpha=0.7)
-        elif 'Fire Station' in loc:
-            plt.scatter(x, y, color='orange', label='Fire Station' if 'Fire Station' not in plt.gca().get_legend_handles_labels()[1] else "", s=200, alpha=0.7)
-        else:
-            plt.scatter(x, y, color='blue', label='Location' if 'Location' not in plt.gca().get_legend_handles_labels()[1] else "", s=200, alpha=0.5)
-        plt.text(x + 0.3, y + 0.3, loc, fontsize=8)
 
-    for (loc1, loc2), dist in distances.items():
-        x1, y1 = locations[loc1]
-        x2, y2 = locations[loc2]
-        plt.plot([x1, x2], [y1, y2], 'k-', linewidth=1.5)
-        plt.text((x1 + x2) / 2, (y1 + y2) / 2, f'{dist}', fontsize=8, color='blue')
-
-    plt.title('Map of Locations, Hospitals, and Fire Stations')
-    plt.xlabel('X Coordinate')
-    plt.ylabel('Y Coordinate')
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-plot_map(LOCATIONS, DISTANCES)'''
-
-def visualize_map(self, highlight_path=None):
+def visualize_map(self, highlight_path=None, distance=None, price=None):
     """
     Visualize the map with locations, distances, and optionally highlight a path.
     """
@@ -285,6 +259,9 @@ def visualize_map(self, highlight_path=None):
             x1, y1 = LOCATIONS[loc1]
             x2, y2 = LOCATIONS[loc2]
             plt.plot([x1, x2], [y1, y2], 'r-', linewidth=2)  # Highlight path in red
+    # Display distance and price on the plot
+    if distance is not None and price is not None:
+        plt.text(0.5, 0.95, f'Distance: {distance} km, Price: {price}0 rupees', fontsize=12, ha='center', transform=plt.gca().transAxes)
 
     plt.title('Map of Locations, Hospitals, and Fire Stations')
     plt.xlabel('X Coordinate')
@@ -301,6 +278,7 @@ class IslamabadMap:
         self.locations = LOCATIONS  # Dictionary of locations and their coordinates
         self.distances = DISTANCES  # Dictionary of distances between locations
         self.visualize_map = visualize_map
+        self.pricing = Pricing()
 
     def _initialize_map(self):
         """Initialize the map graph with locations and distances."""
@@ -351,7 +329,7 @@ class IslamabadMap:
         """Return all distances between connected locations."""
         return self.distances
 
-    def visualize_ride_path(self, start, end):
+    def visualize_ride_path(self, start, end, distance=None, price=None, highlight_path=None):
         """
         Visualize the shortest path between two locations on the map.
         """
@@ -359,7 +337,7 @@ class IslamabadMap:
 
         # First ensure we have a graph
         if not hasattr(self, 'graph') or not self.graph.nodes:
-            print("Debug: Graph not initialized or empty, initializing now...")
+            #print("Debug: Graph not initialized or empty, initializing now...")
             self.graph = self._initialize_map()  # Assuming this is your initialization method
 
         # Verify nodes exist in graph
@@ -380,9 +358,73 @@ class IslamabadMap:
         print(f"Debug - Shortest path found: {path}")
 
         # Reuse the visualize_map function with path highlighting
-        visualize_map(self, highlight_path=path)
+        visualize_map(self, highlight_path=path, distance= distance, price=price)
 
+    def request_and_visualize_ride(self, user_id, location_service):
+        """
+        Request a ride by allowing the user to select pickup and dropoff locations
+        from a list, and visualize the ride path on the map.
+        """
+        # Create an instance of IslamabadMap with the provided location_service
+        islamabad_map = IslamabadMap(location_service)
+        all_locations = islamabad_map.get_all_locations()
 
+        # Display available locations
+        print("\n--- Available Locations ---")
+        for idx, location in enumerate(all_locations, start=1):
+            print(f"{idx}. {location}")
+
+        # Prompt the user to select pickup and dropoff locations
+        try:
+            pickup_index = int(input("Enter the number for your pickup location: "))
+            dropoff_index = int(input("Enter the number for your dropoff location: "))
+
+            # Validate user input
+            if pickup_index < 1 or pickup_index > len(all_locations) or dropoff_index < 1 or dropoff_index > len(all_locations):
+                print("Invalid selection. Please choose valid location numbers.")
+                return
+
+            pickup_location = all_locations[pickup_index - 1]
+            dropoff_location = all_locations[dropoff_index - 1]
+
+            # Validate the graph and locations
+            if not location_service.graph.nodes:
+                #print("Debug: Graph is empty. Reinitializing...")
+                location_service.graph = location_service._initialize_map()
+
+            if pickup_location not in location_service.graph.nodes:
+                print(f"Debug: Pickup location '{pickup_location}' not found in graph.")
+                return "Invalid pickup location"
+
+            if dropoff_location not in location_service.graph.nodes:
+                print(f"Debug: Dropoff location '{dropoff_location}' not found in graph.")
+                return "Invalid dropoff location"
+
+            # Calculate distance and price
+            distance = location_service.graph.get_shortest_path_distance(pickup_location, dropoff_location)
+            if distance is None:
+                print(f"Debug: No path found between '{pickup_location}' and '{dropoff_location}'.")
+                return "Could not calculate route"
+
+            price = self.pricing.calculate_fare(distance)
+            print(f"Calculated price: {price}, Distance: {distance}")
+
+            # Visualize the shortest path
+            #print("Debug: Visualizing shortest path...")
+            try:
+                self.visualize_ride_path(pickup_location, dropoff_location, distance, price)
+            except Exception as e:
+                print(f"Error during visualization: {e}")
+
+            return True, {
+                'pickup_location': pickup_location,
+                'dropoff_location': dropoff_location,
+                'distance': distance,
+                'price': price
+            }
+
+        except ValueError:
+            print("Invalid input. Please enter numbers corresponding to the locations.")
 # Helper functions for the map
 def is_valid_location(location):
     """Check if a location exists in the map."""
