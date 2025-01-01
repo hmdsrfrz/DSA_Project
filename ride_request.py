@@ -238,6 +238,7 @@ class RideRequest:
             
             # Update driver history and availability
             driver = driver_data.get(driver_id)
+            print("debug: ", driver)
             if driver:
                 driver['ride_history'].append(ride_data)
                 if driver.get('active_ride') == ride_data.get('id'):

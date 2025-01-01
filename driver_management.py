@@ -28,7 +28,8 @@ class DriverManagement:
                 "license_number": license_number,
                 "status": "available",
                 "rating": 0.0,
-                "total_rides": 0
+                "total_rides": 0,
+                "ride_history": []
             }
 
             # Load existing drivers

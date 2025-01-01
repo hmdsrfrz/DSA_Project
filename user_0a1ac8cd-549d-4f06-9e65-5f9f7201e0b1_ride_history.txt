@@ -1,0 +1,21 @@
+
+        Ride Number: 1
+        Ride ID: 7bf0d3d0-631f-484e-ade5-a285ccc0c654
+        Pickup Location: F-7 Markaz
+        Dropoff Location: G-11 Markaz
+        Status: completed
+        Start Time: 1735482898.9212294
+        End Time: 1735483350.4376993
+        Duration: 451.51646995544434
+
+        User Details:
+          {'name': 'h', 'email': 'h', 'phone': '1'}
+
+        Driver Details:
+          Name: h2
+          Email: h2
+          Phone: 2
+          Vehicle Type: 2
+          License Number: 2
+        
+

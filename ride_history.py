@@ -172,7 +172,7 @@ class RideHistory:
             
             current = current.next
 
-        return driver_history if driver_history else "No ride history found for this driver."
+        return driver_history if driver_history else None
 
     def format_time(self, timestamp):
         """Formats the timestamp (float) into a readable string."""

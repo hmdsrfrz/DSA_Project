@@ -1,0 +1,144 @@
+from data_structures import DoublyLinkedList
+from datetime import datetime
+from save_load import save_data_to_file, load_data_from_file
+
+class RideHistory:
+    def __init__(self, file_path='ride_history.json'):
+        """
+        Initializes the RideHistory with data loaded from a file if it exists.
+        """
+        self.file_path = file_path
+        self.ride_history = DoublyLinkedList()  # Initialize an empty DoublyLinkedList
+        self.load_ride_history()  # Load existing ride history from the file
+
+    def load_ride_history(self):
+        """Load ride history from the JSON file into the doubly linked list."""
+        try:
+            rides = load_data_from_file(self.file_path)
+            for ride in rides:
+                self.ride_history.append(ride)  # Append each ride to the linked list
+        except FileNotFoundError:
+            print("Ride history file not found. Starting with an empty history.")
+        except Exception as e:
+            print(f"Error loading ride history: {e}")
+
+    def add_ride(self, ride_data):
+        """
+        Adds a ride record to the user's ride history and saves the updated history to the file.
+        """
+        self.ride_history.append(ride_data)  # Append the new ride data to the linked list
+        self.save_ride_history()  # Save the updated history to the file
+
+    def save_ride_history(self):
+        """Save the current ride history to the JSON file."""
+        history = []
+        current = self.ride_history.head
+        while current:
+            history.append(current.data)  # Collect all ride data from the linked list
+            current = current.next
+        save_data_to_file(history, self.file_path)  # Save to file
+
+    def get_user_ride_history(self, user_id):
+        """
+        Returns the list of all past rides for a specific user in a presentable format.
+        Args:
+            user_id (str): The ID of the user whose ride history is to be retrieved.
+        Returns:
+            str: A formatted string of ride records for the specified user.
+        """
+        user_history = []
+        current = self.ride_history.head
+        ride_number = 1  # Initialize ride number
+
+        while current:
+            if current.data['user_id'] == user_id:  # Check if the ride belongs to the user
+                ride_info = (
+                    f"--- Ride #{ride_number} ---\n"
+                    f"Ride ID: {current.data['id']}\n"
+                    f"Pickup Location: {current.data['pickup_location']}\n"
+                    f"Dropoff Location: {current.data['dropoff_location']}\n"
+                    f"Status: {current.data['status']}\n"
+                    f"Start Time: {self.format_time(current.data['start_time'])}\n"
+                    f"End Time: {self.format_time(current.data['end_time'])}\n"
+                    f"Duration: {self.format_duration(current.data['duration'])}\n"
+                    f"User  Details:\n"
+                    f"  Name: {current.data['user_details']['name']}\n"
+                    f"  Email: {current.data['user_details']['email']}\n"
+                    f"  Phone: {current.data['user_details']['phone']}\n"
+                    f"Driver Details:\n"
+                    f"  Name: {current.data['driver_details']['name']}\n"
+                    f"  Email: {current.data['driver_details']['email']}\n"
+                    f"  Phone: {current.data['driver_details']['phone']}\n"
+                    f"  Vehicle Type: {current.data['driver_details']['vehicle_type']}\n"
+                    f"  License Number: {current.data['driver_details']['license_number']}\n"
+                )
+                user_history.append(ride_info)
+                ride_number += 1  # Increment ride number
+            current = current.next
+
+        return "\n".join(user_history) if user_history else "No ride history found for this user."
+
+
+    def get_driver_ride_history(self, driver_id):
+        """
+        Returns the list of all past rides for a specific driver in a presentable format.
+        Args:
+            driver_id (str): The ID of the driver whose ride history is to be retrieved.
+        Returns:
+            str: A formatted string of ride records for the specified driver.
+        """
+        driver_history = []
+        current = self.ride_history.head
+        ride_number = 1  # Initialize ride number
+
+        while current:
+            if current.data['driver_id'] == driver_id:  # Check if the ride belongs to the driver
+                ride_info = (
+                    f"--- Ride #{ride_number} ---\n"
+                    f"Ride ID: {current.data['id']}\n"
+                    f"Pickup Location: {current.data['pickup_location']}\n"
+                    f"Dropoff Location: {current.data['dropoff_location']}\n"
+                    f"Status: {current.data['status']}\n"
+                    f"Start Time: {self.format_time(current.data['start_time'])}\n"
+                    f"End Time: {self.format_time(current.data['end_time'])}\n"
+                    f"Duration: {self.format_duration(current.data['duration'])}\n"
+                    f"User  Details:\n"
+                    f"  Name: {current.data['user_details']['name']}\n"
+                    f"  Email: {current.data['user_details']['email']}\n"
+                    f"  Phone: {current.data['user_details']['phone']}\n"
+                    f"Driver Details:\n"
+                    f"  Name: {current.data['driver_details']['name']}\n"
+                    f"  Email: {current.data['driver_details']['email']}\n"
+                    f"  Phone: {current.data['driver_details']['phone']}\n"
+                    f"  Vehicle Type: {current.data['driver_details']['vehicle_type']}\n"
+                    f"  License Number: {current.data['driver_details']['license_number']}\n"
+                )
+                driver_history.append(ride_info)
+                ride_number += 1  # Increment ride number
+            current = current.next
+
+        return (driver_history) if driver_history else "No ride history found for this driver."
+
+
+    def format_time(self, timestamp):
+        """Formats the timestamp (float) into a readable string."""
+        dt_object = datetime.fromtimestamp(timestamp)
+        return dt_object.strftime("%Y-%m-%d %H:%M:%S")
+
+
+    def format_duration(self, duration):
+        """Formats the duration into a readable string."""
+        hours, remainder = divmod(duration, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours}h {minutes}m {seconds}s"
+
+    def get_ride_history(self):
+        """
+        Returns the list of all past rides in chronological order.
+        """
+        history = []
+        current = self.ride_history.head
+        while current:
+            history.append(current.data)  # Collect ride data
+            current = current.next
+        return history

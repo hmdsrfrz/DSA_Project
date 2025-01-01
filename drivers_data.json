@@ -187,5 +187,59 @@
         "status": "available",
         "rating": 0.0,
         "total_rides": 0
+    },
+    "93bae7eb-12a0-4a31-83bc-59b7231ba862": {
+        "id": "93bae7eb-12a0-4a31-83bc-59b7231ba862",
+        "name": "john",
+        "email": "john@gmail.com",
+        "phone": "11111111111",
+        "password": "11111",
+        "vehicle_type": "sedan",
+        "license_number": "111",
+        "status": "available",
+        "rating": 0.0,
+        "total_rides": 0,
+        "current_location": "NUST"
+    },
+    "1e27b110-991c-4892-a605-dff5699c13d7": {
+        "id": "1e27b110-991c-4892-a605-dff5699c13d7",
+        "name": "mark",
+        "email": "mark@gmail.com",
+        "phone": "11111111111",
+        "password": "11111",
+        "vehicle_type": "suv",
+        "license_number": "111",
+        "status": "available",
+        "rating": 0.0,
+        "total_rides": 0,
+        "ride_history": [
+            {
+                "id": "2e431815-8762-4343-ac49-9f83ac3100ea",
+                "user_id": "9c5d569f-8273-4910-9489-9cc2b61200c1",
+                "driver_id": "1e27b110-991c-4892-a605-dff5699c13d7",
+                "pickup_location": "NUST",
+                "dropoff_location": "F-6 Markaz",
+                "status": "completed",
+                "start_time": 1735716065.7562318,
+                "rating": null,
+                "feedback": null,
+                "end_time": 1735716067.101938,
+                "duration": 1.3457062244415283
+            },
+            {
+                "id": "c1e5c5d5-c7b5-48fa-885f-e7a7262627c4",
+                "user_id": "9c5d569f-8273-4910-9489-9cc2b61200c1",
+                "driver_id": "1e27b110-991c-4892-a605-dff5699c13d7",
+                "pickup_location": "NUST",
+                "dropoff_location": "F-7 Markaz",
+                "status": "completed",
+                "start_time": 1735716490.7498863,
+                "rating": null,
+                "feedback": null,
+                "end_time": 1735716492.151062,
+                "duration": 1.4011757373809814
+            }
+        ],
+        "current_location": "NUST"
     }
 }
